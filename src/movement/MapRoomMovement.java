@@ -40,7 +40,7 @@ public class MapRoomMovement extends MapRouteMovement implements
     /** next route's index to give by prototype */
     private Integer nextRouteIndex = null;
     /** Index of the first stop for a group of nodes (or -1 for random) */
-    private int firstStophIndex = -1;
+    private int firstStopIndex = -1;
 
     /** Route of the movement model's instance */
     private MapRoute route;

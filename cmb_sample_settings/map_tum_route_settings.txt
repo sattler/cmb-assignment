@@ -20,6 +20,7 @@ Group1.nrofHosts = 5
 Group1.nrofInterfaces = 1
 Group1.interface1 = myInterface
 Group1.movementModel = MapRoomMovement
+#Group1.movementModel = MapRouteMovement
 Group1.routeFile = data/TUM/tum.wkt
 Group1.routeType = 1
 Group1.router = PassiveRouter
@@ -47,7 +48,7 @@ Report.reportDir = reports
 ## GUI settings
 
 # GUI underlay image settings
-GUI.UnderlayImage.fileName = data/tum/tumMap.png
+GUI.UnderlayImage.fileName = data/TUM/tumMap.png
 # Image offset in pixels (x, y)
 GUI.UnderlayImage.offset = 0, 0
 # Scaling factor for the image
