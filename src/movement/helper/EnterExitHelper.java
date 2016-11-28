@@ -1,9 +1,25 @@
 package movement.helper;
 
+import core.Settings;
+
 /**
  * Created by Sattler Patrick on 27/11/16.
  */
 public class EnterExitHelper {
+
+    // Settings for enter exit helper
+    public static final String LECTURE_PARTICIPATION_CHANCE_SETTING = "LectureParticipationChance";
+    public static final String START_PEAK_ENTER_TIME_DIFFERENCE_SETTING = "StartPeakEnterTimeDifference";
+    public static final String ENTER_LECTURE_STDDEV_SETTING = "EnterLectureStddev";
+    public static final String EXIT_LECTURE_STDDEV_SETTING = "ExitLectureStddev";
+    public static final String END_ENTER_LECTURE_DIFFERENCE_SETTING = "EndEnterLectureDifference";
+    public static final String ENTER_EXIT_STDDEV_SETTING = "EnterExitStddev";
+    public static final String EXIT_END_TIME_SETTING = "ExitEndTime";
+    public static final String EXIT_START_TIME_SETTING = "ExitStartTime";
+    public static final String ENTER_END_TIME_SETTING = "EnterEndTime";
+    public static final String ENTER_START_TIME_SETTING = "EnterStartTime";
+    public static final String ENTER_CHANCE_WITHOUT_SCHEDULE_SETTING = "EnterChanceWithoutSchedule";
+    public static final String TIME_INTERVALLS_PER_MINUTE_SETTING = "TimeInterallsPerMinute";
 
     private final double LectureParticipationChance;
     private final int StartPeakEnterTimeDifference;
@@ -16,24 +32,23 @@ public class EnterExitHelper {
     private final int ExitStartTime;
     private final int ExitEndTime;
     private final double EnterExitStddev;
+    private final int TimeIntervallsPerMinute;
 
     private RandomHelper random = RandomHelper.getInstance();
 
-    public EnterExitHelper(double lectureParticipationChance, int startPeakEnterTimeDifference, double enterLectureStddev,
-                           double exitLectureStddev, int endEnterLectureDifference,
-                           double enterChanceWithoutSchedule, int enterStartTime, int enterEndTime,
-                           int exitStartTime, int exitEndTime, double enterExitStddev) {
-        this.LectureParticipationChance = lectureParticipationChance;
-        this.StartPeakEnterTimeDifference = startPeakEnterTimeDifference;
-        this.EnterLectureStddev = enterLectureStddev;
-        this.ExitLectureStddev = exitLectureStddev;
-        this.EndEnterLectureDifference = endEnterLectureDifference;
-        this.EnterChanceWithoutSchedule = enterChanceWithoutSchedule;
-        this.EnterStartTime = enterStartTime;
-        this.EnterEndTime = enterEndTime;
-        this.ExitStartTime = exitStartTime;
-        this.ExitEndTime = exitEndTime;
-        this.EnterExitStddev = enterExitStddev;
+    public EnterExitHelper(Settings settings) {
+        LectureParticipationChance = settings.getDouble(LECTURE_PARTICIPATION_CHANCE_SETTING);
+        StartPeakEnterTimeDifference = settings.getInt(START_PEAK_ENTER_TIME_DIFFERENCE_SETTING);
+        EnterLectureStddev = settings.getDouble(ENTER_LECTURE_STDDEV_SETTING);
+        ExitLectureStddev = settings.getDouble(EXIT_LECTURE_STDDEV_SETTING);
+        EndEnterLectureDifference = settings.getInt(END_ENTER_LECTURE_DIFFERENCE_SETTING);
+        EnterChanceWithoutSchedule = settings.getDouble(ENTER_CHANCE_WITHOUT_SCHEDULE_SETTING);
+        EnterStartTime = settings.getInt(ENTER_START_TIME_SETTING);
+        EnterEndTime = settings.getInt(ENTER_END_TIME_SETTING);
+        ExitStartTime = settings.getInt(EXIT_START_TIME_SETTING);
+        ExitEndTime = settings.getInt(EXIT_END_TIME_SETTING);
+        EnterExitStddev = settings.getDouble(ENTER_EXIT_STDDEV_SETTING);
+        TimeIntervallsPerMinute = settings.getInt(TIME_INTERVALLS_PER_MINUTE_SETTING);
     }
 
     public Integer enterTimeForSchedule(ScheduleInterface schedule, boolean byUbahn) {
@@ -58,7 +73,7 @@ public class EnterExitHelper {
                     continue;
                 }
                 if (byUbahn) {
-                    return (int) (Math.round(enterTime / 10.) * 10);
+                    return (int) (Math.round(enterTime / (double)(10 * TimeIntervallsPerMinute)) * (10 * TimeIntervallsPerMinute));
                 } else {
                     return (int) Math.round(enterTime);
                 }
@@ -66,7 +81,7 @@ public class EnterExitHelper {
         }
         if (random.getRandomDouble() < EnterChanceWithoutSchedule) {
             if (byUbahn) {
-                return (int) (Math.round(normalEnterTime / 10.) * 10);
+                return (int) (Math.round(normalEnterTime / (double)(10 * TimeIntervallsPerMinute)) * (10 * TimeIntervallsPerMinute));
             } else {
                 return (int) Math.round(normalEnterTime);
             }
@@ -88,7 +103,7 @@ public class EnterExitHelper {
                     );
             if (normalExitTime < exitTime) {
                 if (byUbahn) {
-                    return (int) (Math.round(exitTime / 10.) * 10);
+                    return (int) (Math.round(exitTime / (double)(10 * TimeIntervallsPerMinute)) * (10 * TimeIntervallsPerMinute));
                 } else {
                     return (int) Math.round(exitTime);
                 }
@@ -100,7 +115,7 @@ public class EnterExitHelper {
         }
 
         if (byUbahn) {
-            return (int) (Math.round(normalExitTime / 10.) * 10);
+            return (int) (Math.round(normalExitTime / (double)(10 * TimeIntervallsPerMinute)) * (10 * TimeIntervallsPerMinute));
         } else {
             return (int) Math.round(normalExitTime);
         }
