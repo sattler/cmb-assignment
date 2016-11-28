@@ -16,3 +16,7 @@ doc/package-list
 /target/
 /out/
 .settings/org.eclipse.*
+
+.DS_Store
+
+.idea/
