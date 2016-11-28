@@ -44,6 +44,7 @@ public class DynamicSchedulePathMovement extends MovementModel {
     public Coord getInitialLocation() {
         if (byUbahn) {
             // TODO: return ubahn enter location
+            return null;
         } else {
             // TODO: return random other location
             return null;
