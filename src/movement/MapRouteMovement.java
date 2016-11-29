@@ -38,17 +38,21 @@ public class MapRouteMovement extends MapBasedMovement implements
 	public static final String ROUTE_FIRST_STOP_S = "routeFirstStop";
 
 	/** the Dijkstra shortest path finder */
-	private DijkstraPathFinder pathFinder;
+	protected DijkstraPathFinder pathFinder;
 
 	/** Prototype's reference to all routes read for the group */
-	private List<MapRoute> allRoutes = null;
+	protected List<MapRoute> allRoutes = null;
 	/** next route's index to give by prototype */
-	private Integer nextRouteIndex = null;
+	protected Integer nextRouteIndex = null;
 	/** Index of the first stop for a group of nodes (or -1 for random) */
-	private int firstStopIndex = -1;
+	protected int firstStopIndex = -1;
 
 	/** Route of the movement model's instance */
-	private MapRoute route;
+	protected MapRoute route;
+
+	protected String routeFileName;
+
+	protected int routeType;
 
 	/**
 	 * Creates a new movement model based on a Settings object's settings.
@@ -56,24 +60,11 @@ public class MapRouteMovement extends MapBasedMovement implements
 	 */
 	public MapRouteMovement(Settings settings) {
 		super(settings);
-		String fileName = settings.getSetting(ROUTE_FILE_S);
-		int type = settings.getInt(ROUTE_TYPE_S);
-		allRoutes = MapRoute.readRoutes(fileName, type, getMap());
-		nextRouteIndex = 0;
+		routeFileName = settings.getSetting(ROUTE_FILE_S);
+		routeType = settings.getInt(ROUTE_TYPE_S);
+		allRoutes = MapRoute.readRoutes(routeFileName, routeType, getMap());
 		pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
-		this.route = this.allRoutes.get(this.nextRouteIndex).replicate();
-		if (this.nextRouteIndex >= this.allRoutes.size()) {
-			this.nextRouteIndex = 0;
-		}
-
-		if (settings.contains(ROUTE_FIRST_STOP_S)) {
-			this.firstStopIndex = settings.getInt(ROUTE_FIRST_STOP_S);
-			if (this.firstStopIndex >= this.route.getNrofStops()) {
-				throw new SettingsError("Too high first stop's index (" +
-						this.firstStopIndex + ") for route with only " +
-						this.route.getNrofStops() + " stops");
-			}
-		}
+		initFirstIndex(settings);
 	}
 
 	/**
@@ -99,6 +90,23 @@ public class MapRouteMovement extends MapBasedMovement implements
 		proto.nextRouteIndex++; // give routes in order
 		if (proto.nextRouteIndex >= proto.allRoutes.size()) {
 			proto.nextRouteIndex = 0;
+		}
+	}
+
+	protected void initFirstIndex(Settings settings) {
+		nextRouteIndex = 0;
+		this.route = this.allRoutes.get(this.nextRouteIndex).replicate();
+		if (this.nextRouteIndex >= this.allRoutes.size()) {
+			this.nextRouteIndex = 0;
+		}
+
+		if (settings.contains(ROUTE_FIRST_STOP_S)) {
+			this.firstStopIndex = settings.getInt(ROUTE_FIRST_STOP_S);
+			if (this.firstStopIndex >= this.route.getNrofStops()) {
+				throw new SettingsError("Too high first stop's index (" +
+						this.firstStopIndex + ") for route with only " +
+						this.route.getNrofStops() + " stops");
+			}
 		}
 	}
 
