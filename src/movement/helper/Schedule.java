@@ -1,55 +1,62 @@
 package movement.helper;
 
-import java.util.List;
+import core.Settings;
+import util.Tuple;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Created by netjinho on 29-11-2016.
  */
 public class Schedule implements ScheduleInterface{
-    private int[] startSchedule;
-    private int[] endSchedule;
 
-    public Schedule(){
+    public static final String SCHEDULE_TIME_SETTING = "ScheduleTime";
+    public static final String AVERAGE_COURSES_PER_DAY_SETTING = "AverageCoursesPerDaySetting";
+    public static final String FIXED_SCHEDULE_FILE_SETTING = "FixedScheduleFile";
+
+    private List<Tuple<Integer, Integer>> timeSlots;
+
+    public Schedule(Settings settings){
         RandomHelper random = RandomHelper.getInstance();
 
-        List<Integer> options = new ArrayList<>();
-        List<Integer> start = new ArrayList<>();
-        List<Integer> end = new ArrayList<>();
+        timeSlots = new ArrayList<>();
 
-        options.add(8);
-        options.add(10);
-        options.add(12);
-        options.add(14);
-        options.add(16);
-        options.add(18);
+        double coursesPerDay = settings.getInt(AVERAGE_COURSES_PER_DAY_SETTING);
+        int[] times = settings.getCsvInts(SCHEDULE_TIME_SETTING);
 
-        int size = random.getRandomIntBetween(0,5); //Between no schedule and 4 classes a day
+        List<Integer> startTimes = new ArrayList<>(times.length);
 
-        for (int i = 0, idx; i<size; i++){
-            idx = random.getRandomIntBetween(0,options.size());
-
-            start.add(options.get(idx));
-            end.add(options.get(idx) + 2);
-
-            options.remove(idx);
+        for (int time: times) {
+            startTimes.add(time);
         }
 
-        Collections.sort(start);
-        Collections.sort(end);
+        List<Integer> endTimes = new ArrayList<>(startTimes);
+        startTimes.remove(startTimes.size());
+        endTimes.remove(0);
 
-        startSchedule = start.stream().mapToInt(i -> i).toArray();
-        endSchedule = end.stream().mapToInt(i -> i).toArray();
+        for (int i = 0; i < coursesPerDay; i++){
+            int randomSlot = random.getRandomIntBetween(0, startTimes.size());
+            int startTime = startTimes.get(randomSlot);
+            int endTime = endTimes.get(randomSlot);
+
+            timeSlots.add(new Tuple<>(startTime, endTime));
+            startTimes.remove(randomSlot);
+            endTimes.remove(randomSlot);
+        }
+
+        Collections.sort(timeSlots, Comparator.comparing(Tuple::getKey));
     }
 
     public int[] getStartTimesSorted(){
-        return startSchedule;
+        return timeSlots.stream().mapToInt(i -> i.getKey()).toArray();
     }
 
 
     public int[] getEndTimesSorted(){
-        return endSchedule;
+        return timeSlots.stream().mapToInt(i -> i.getValue()).toArray();
     }
 
     public boolean emptySchedule(int[] schedule){
