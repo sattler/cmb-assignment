@@ -7,16 +7,21 @@ package movement;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-
+import core.Coord;
+import core.Settings;
 import core.SettingsError;
+import core.SimClock;
 import input.WKTReader;
 import movement.helper.RandomHelper;
+import movement.helper.EnterExitHelper;
+import movement.helper.Schedule;
 import movement.map.DijkstraPathFinder;
 import movement.map.MapNode;
 import movement.map.MapRoute;
-import core.Coord;
-import core.Settings;
 import movement.map.SimMap;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Map based movement model that uses predetermined paths within the map area.
@@ -31,16 +36,25 @@ public class MapRoomMovement extends MapBasedMovement {
     public static final String LECTURE_ROOM_MAP_FILE_S = "lectureRoomFile";
     public static final String ROUTE_FILE_S = "routeFile";
     public static final String ROUTE_TYPE_S = "routeType";
+    public static final String CHANCE_FOR_UBAHN_SETTING = "ChanceForUbahn";
+
     private String routeFileName;
     private int routeType;
     private DijkstraPathFinder pathFinder;
     private List<MapRoute> allRoutes = null;
 
     private Settings roomSettings;
-
     private List<MapNode> roomNodes;
-
     private RandomHelper randomHelper;
+    private EnterExitHelper enterExitHelper;
+    private double chanceForUbahn;
+
+    private Schedule schedule;
+    private Settings settings;
+    private int enterTime;
+    private int exitTime;
+    private boolean byUbahn;
+
 
     /**
      * Creates a new movement model based on a Settings object's settings.
@@ -57,19 +71,38 @@ public class MapRoomMovement extends MapBasedMovement {
         allRoutes = MapRoute.readRoutes(routeFileName, routeType, getMap());
         pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
         roomNodes = generatePointRoutes(allRoutes, routeFileName, lrMapFileName, getMap());
+
+        this.settings = settings;
+        this.schedule = new Schedule(settings);
+
+        RandomHelper.createInstance(MovementModel.rng);
+        this.randomHelper = RandomHelper.getInstance();
+
+        this.chanceForUbahn = settings.getDouble(CHANCE_FOR_UBAHN_SETTING);
+        this.byUbahn = this.randomHelper.getRandomDouble() < this.chanceForUbahn;
+
+        this.enterExitHelper = new EnterExitHelper(settings);
+        initEnterExitTime();
     }
 
-    /**
-     * Copyconstructor.
-     * @param proto The MapRouteMovement prototype
-     */
-    protected MapRoomMovement(MapRoomMovement proto) {
+    public MapRoomMovement(MapRoomMovement proto) {
         super(proto);
-
+        this.settings = proto.settings;
+        this.schedule = new Schedule(proto.settings);
         this.randomHelper = proto.randomHelper;
+        this.enterExitHelper = proto.enterExitHelper;
+        this.chanceForUbahn = proto.chanceForUbahn;
         this.pathFinder = proto.pathFinder;
         this.allRoutes = proto.allRoutes;
         this.roomNodes = proto.roomNodes;
+
+        this.byUbahn = this.randomHelper.getRandomDouble() < this.chanceForUbahn;
+        initEnterExitTime();
+    }
+
+    private void initEnterExitTime() {
+        this.enterTime = this.enterExitHelper.enterTimeForSchedule(schedule, byUbahn);
+        this.exitTime = this.enterExitHelper.exitTimeForSchedule(schedule, byUbahn, enterTime);
     }
 
     private List<MapNode> generatePointRoutes(List<MapRoute> tempRoutes, String fileName, String lrFileName, SimMap map) {
@@ -159,4 +192,19 @@ public class MapRoomMovement extends MapBasedMovement {
         return new MapRoomMovement(this);
     }
 
+    @Override
+    public boolean isActive() {
+        return SimClock.getIntTime() >= this.enterTime && SimClock.getIntTime() <= this.exitTime;
+    }
+
+    @Override
+    public double nextPathAvailable() {
+        final double curTime = SimClock.getTime();
+        if ( curTime < this.enterTime ) {
+            return this.enterTime;
+        } else if ( curTime > this.exitTime ) {
+            return Double.MAX_VALUE;
+        }
+        return curTime;
+    }
 }
