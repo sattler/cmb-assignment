@@ -1,5 +1,8 @@
 package movement.helper;
 
+import core.DTNSim;
+import movement.MovementModel;
+
 import java.util.Random;
 
 /**
@@ -10,6 +13,11 @@ public class RandomHelper {
 
     private static RandomHelper instance = null;
     private Random random;
+
+    static {
+        DTNSim.registerForReset(MovementModel.class.getCanonicalName());
+        reset();
+    }
 
     private RandomHelper(Random rng) {
         this.random = rng;
@@ -73,5 +81,9 @@ public class RandomHelper {
      */
     public double getNormalRandomWithMeanAndStddev(double mean, double stddev) {
         return random.nextGaussian() * stddev + mean;
+    }
+
+    public static void reset() {
+        instance = null;
     }
 }
