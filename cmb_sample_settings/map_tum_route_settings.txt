@@ -16,7 +16,7 @@ myInterface.transmitSpeed = 0
 Scenario.nrofHostGroups = 1
 
 Group1.groupID = x
-Group1.nrofHosts = 5
+Group1.nrofHosts = 10
 Group1.nrofInterfaces = 1
 Group1.interface1 = myInterface
 Group1.movementModel = MapRoomMovement
@@ -28,15 +28,7 @@ Group1.router = PassiveRouter
 ## Map based movement -movement model specific settings
 MapBasedMovement.nrofMapFiles = 1
 MapBasedMovement.mapFile1 = data/TUM/tum.wkt
-#MapBasedMovement.nrofRooms = 4
-# HS1
-#MapBasedMovement.room1 = POINT (248.22498023681035 134.07123072118927)
-# HS2
-#MapBasedMovement.room2 = POINT (225.12582498103558 104.04233471619116)
-# HS3
-#MapBasedMovement.room3 = POINT (194.08076941626237 112.78249675582326)
-# Bib
-#MapBasedMovement.room4 = POINT (70.84513840790459 145.81824011383205)
+MapRoomMovement.lectureRoomFile = data/TUM/lectureRooms.wkt
 
 # Reports
 Report.nrofReports = 1
