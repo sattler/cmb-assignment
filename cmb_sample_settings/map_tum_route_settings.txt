@@ -24,6 +24,21 @@ Group1.movementModel = MapRoomMovement
 Group1.routeFile = data/TUM/tum.wkt
 Group1.routeType = 1
 Group1.router = PassiveRouter
+Group1.averageCoursesPerDaySetting = 2
+Group1.scheduleTime = 8, 12, 14, 16
+Group1.chanceForUbahn = 0.8
+Group1.lectureParticipationChance = 0.9
+Group1.startPeakEnterTimeDifference = 1
+Group1.enterLectureStddev = 1
+Group1.exitLectureStddev = 1
+Group1.endEnterLectureDifference = 1
+Group1.enterChanceWithoutSchedule = 1
+Group1.enterStartTime = 1
+Group1.enterEndTime = 1
+Group1.exitStartTime = 1
+Group1.exitEndTime = 1
+Group1.enterExitStddev = 1
+Group1.timeInterallsPerMinute = 1
 
 ## Map based movement -movement model specific settings
 MapBasedMovement.nrofMapFiles = 1

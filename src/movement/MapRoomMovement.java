@@ -36,21 +36,22 @@ public class MapRoomMovement extends MapBasedMovement {
     public static final String LECTURE_ROOM_MAP_FILE_S = "lectureRoomFile";
     public static final String ROUTE_FILE_S = "routeFile";
     public static final String ROUTE_TYPE_S = "routeType";
-    public static final String CHANCE_FOR_UBAHN_SETTING = "ChanceForUbahn";
+    public static final String CHANCE_FOR_UBAHN_SETTING = "chanceForUbahn";
 
     private String routeFileName;
     private int routeType;
     private DijkstraPathFinder pathFinder;
     private List<MapRoute> allRoutes = null;
 
-    private Settings roomSettings;
+    private Settings modelSettings;
+    private Settings groupSettings;
+
     private List<MapNode> roomNodes;
     private RandomHelper randomHelper;
     private EnterExitHelper enterExitHelper;
     private double chanceForUbahn;
 
     private Schedule schedule;
-    private Settings settings;
     private int enterTime;
     private int exitTime;
     private boolean byUbahn;
@@ -64,16 +65,18 @@ public class MapRoomMovement extends MapBasedMovement {
         super(settings);
         RandomHelper.createInstance(rng);
         randomHelper = RandomHelper.getInstance();
-        roomSettings = new Settings(MAP_ROOM_MOVEMENT_NS);
-        String lrMapFileName = roomSettings.getSetting(LECTURE_ROOM_MAP_FILE_S);
+
+        this.modelSettings = new Settings(MAP_ROOM_MOVEMENT_NS);
+        this.groupSettings = settings;
+        this.schedule = new Schedule(groupSettings, randomHelper);
+
+        String lrMapFileName = modelSettings.getSetting(LECTURE_ROOM_MAP_FILE_S);
         routeFileName = settings.getSetting(ROUTE_FILE_S);
         routeType = settings.getInt(ROUTE_TYPE_S);
         allRoutes = MapRoute.readRoutes(routeFileName, routeType, getMap());
         pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
         roomNodes = generatePointRoutes(allRoutes, routeFileName, lrMapFileName, getMap());
 
-        this.settings = settings;
-        this.schedule = new Schedule(settings);
 
         RandomHelper.createInstance(MovementModel.rng);
         this.randomHelper = RandomHelper.getInstance();
@@ -87,8 +90,8 @@ public class MapRoomMovement extends MapBasedMovement {
 
     public MapRoomMovement(MapRoomMovement proto) {
         super(proto);
-        this.settings = proto.settings;
-        this.schedule = new Schedule(proto.settings);
+        this.groupSettings = proto.groupSettings;
+        this.schedule = new Schedule(proto.groupSettings, proto.randomHelper);
         this.randomHelper = proto.randomHelper;
         this.enterExitHelper = proto.enterExitHelper;
         this.chanceForUbahn = proto.chanceForUbahn;

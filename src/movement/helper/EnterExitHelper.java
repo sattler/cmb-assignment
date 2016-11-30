@@ -8,18 +8,18 @@ import core.Settings;
 public class EnterExitHelper {
 
     // Settings for enter exit helper
-    public static final String LECTURE_PARTICIPATION_CHANCE_SETTING = "LectureParticipationChance";
-    public static final String START_PEAK_ENTER_TIME_DIFFERENCE_SETTING = "StartPeakEnterTimeDifference";
-    public static final String ENTER_LECTURE_STDDEV_SETTING = "EnterLectureStddev";
-    public static final String EXIT_LECTURE_STDDEV_SETTING = "ExitLectureStddev";
-    public static final String END_ENTER_LECTURE_DIFFERENCE_SETTING = "EndEnterLectureDifference";
-    public static final String ENTER_EXIT_STDDEV_SETTING = "EnterExitStddev";
-    public static final String EXIT_END_TIME_SETTING = "ExitEndTime";
-    public static final String EXIT_START_TIME_SETTING = "ExitStartTime";
-    public static final String ENTER_END_TIME_SETTING = "EnterEndTime";
-    public static final String ENTER_START_TIME_SETTING = "EnterStartTime";
-    public static final String ENTER_CHANCE_WITHOUT_SCHEDULE_SETTING = "EnterChanceWithoutSchedule";
-    public static final String TIME_INTERVALLS_PER_MINUTE_SETTING = "TimeInterallsPerMinute";
+    public static final String LECTURE_PARTICIPATION_CHANCE_SETTING = "lectureParticipationChance";
+    public static final String START_PEAK_ENTER_TIME_DIFFERENCE_SETTING = "startPeakEnterTimeDifference";
+    public static final String ENTER_LECTURE_STDDEV_SETTING = "enterLectureStddev";
+    public static final String EXIT_LECTURE_STDDEV_SETTING = "exitLectureStddev";
+    public static final String END_ENTER_LECTURE_DIFFERENCE_SETTING = "endEnterLectureDifference";
+    public static final String ENTER_EXIT_STDDEV_SETTING = "enterExitStddev";
+    public static final String EXIT_END_TIME_SETTING = "exitEndTime";
+    public static final String EXIT_START_TIME_SETTING = "exitStartTime";
+    public static final String ENTER_END_TIME_SETTING = "enterEndTime";
+    public static final String ENTER_START_TIME_SETTING = "enterStartTime";
+    public static final String ENTER_CHANCE_WITHOUT_SCHEDULE_SETTING = "enterChanceWithoutSchedule";
+    public static final String TIME_INTERVALLS_PER_MINUTE_SETTING = "timeInterallsPerMinute";
 
     private final double LectureParticipationChance;
     private final int StartPeakEnterTimeDifference;
