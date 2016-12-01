@@ -1,7 +1,7 @@
 # Settings for map route based movement in a triangle.
 
 Scenario.name = MapRouteMovement
-Scenario.endTime = 46800
+Scenario.endTime = 54000
 Scenario.updateInterval = 0.05
 Scenario.simulateConnections = false
 MovementModel.worldSize = 1000,1000
@@ -16,24 +16,24 @@ myInterface.transmitSpeed = 0
 Scenario.nrofHostGroups = 1
 
 Group1.groupID = x
-Group1.nrofHosts = 10
+Group1.nrofHosts = 5
 Group1.nrofInterfaces = 1
 Group1.interface1 = myInterface
 Group1.movementModel = MapRoomMovement
 Group1.router = PassiveRouter
 Group1.averageCoursesPerDaySetting = 2
-Group1.scheduleTime = 3600, 10800, 18000, 25200
-Group1.chanceForUbahn = 0.8
-Group1.lectureParticipationChance = 0.9
+Group1.scheduleTime = 7200, 14400, 21600, 28800
+Group1.chanceForUbahn = 0.9
+Group1.lectureParticipationChance = 0.75
 Group1.startPeakEnterTimeDifference = 600
 Group1.enterLectureStddev = 1800
 Group1.exitLectureStddev = 600
 Group1.endEnterLectureDifference = 1200
-Group1.enterChanceWithoutSchedule = 0.8
-Group1.enterStartTime = 0
-Group1.enterEndTime = 144000
-Group1.exitStartTime = 14400
-Group1.exitEndTime = 46800
+Group1.enterChanceWithoutSchedule = 0.9
+Group1.enterStartTime = 3600
+Group1.enterEndTime = 21600
+Group1.exitStartTime = 21600
+Group1.exitEndTime = 50400
 Group1.enterExitStddev = 4000
 Group1.timeInterallsPerMinute = 60
 
@@ -57,8 +57,9 @@ MapRoomMovement.lr8 = 187.716365711004, 163.54755226050048, 30
 
 
 # Reports
-Report.nrofReports = 1
+Report.nrofReports = 2
 Report.report1 = FlightLengthReport
+Report.report2 = InterContactTimesReport
 
 Report.reportDir = reports
 
