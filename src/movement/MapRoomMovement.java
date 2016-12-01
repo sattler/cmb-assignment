@@ -4,22 +4,14 @@
  */
 package movement;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
 import core.Coord;
 import core.Settings;
-import core.SettingsError;
 import core.SimClock;
-import input.WKTReader;
-import movement.helper.RandomHelper;
-import movement.helper.EnterExitHelper;
-import movement.helper.Schedule;
+import movement.helper.*;
 import movement.map.DijkstraPathFinder;
 import movement.map.MapNode;
 import movement.map.MapRoute;
-import movement.map.SimMap;
-import java.util.ArrayList;
+
 import java.util.List;
 
 
@@ -33,7 +25,6 @@ public class MapRoomMovement extends MapBasedMovement {
 
 
     public static final String MAP_ROOM_MOVEMENT_NS = "MapRoomMovement";
-    public static final String LECTURE_ROOM_MAP_FILE_S = "lectureRoomFile";
     public static final String ROUTE_FILE_S = "routeFile";
     public static final String ROUTE_TYPE_S = "routeType";
     public static final String CHANCE_FOR_UBAHN_SETTING = "chanceForUbahn";
@@ -46,8 +37,9 @@ public class MapRoomMovement extends MapBasedMovement {
     private Settings modelSettings;
     private Settings groupSettings;
 
-    private List<MapNode> roomNodes;
+    private List<Room> rooms;
     private RandomHelper randomHelper;
+    private RoomHelper roomHelper;
     private EnterExitHelper enterExitHelper;
     private double chanceForUbahn;
 
@@ -70,18 +62,22 @@ public class MapRoomMovement extends MapBasedMovement {
         this.groupSettings = settings;
         this.schedule = new Schedule(groupSettings, randomHelper);
 
-        String lrMapFileName = modelSettings.getSetting(LECTURE_ROOM_MAP_FILE_S);
-        routeFileName = settings.getSetting(ROUTE_FILE_S);
-        routeType = settings.getInt(ROUTE_TYPE_S);
+        routeFileName = modelSettings.getSetting(ROUTE_FILE_S);
+        routeType = modelSettings.getInt(ROUTE_TYPE_S);
         allRoutes = MapRoute.readRoutes(routeFileName, routeType, getMap());
+        RoomHelper.createInstance(modelSettings, allRoutes, getMap());
+        roomHelper = RoomHelper.getInstance();
         pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
-        roomNodes = generatePointRoutes(allRoutes, routeFileName, lrMapFileName, getMap());
 
+        // @TODO: @Patrick here query RoomHelper for rooms according to user group
+        rooms = roomHelper.getAllRooms();
+        //rooms = roomHelper.getLectureRooms();
+        //rooms = roomHelper.getOtherRooms();
 
         RandomHelper.createInstance(MovementModel.rng);
         this.randomHelper = RandomHelper.getInstance();
 
-        this.chanceForUbahn = settings.getDouble(CHANCE_FOR_UBAHN_SETTING);
+        this.chanceForUbahn = groupSettings.getDouble(CHANCE_FOR_UBAHN_SETTING);
         this.byUbahn = this.randomHelper.getRandomDouble() < this.chanceForUbahn;
 
         this.enterExitHelper = new EnterExitHelper(settings);
@@ -91,13 +87,14 @@ public class MapRoomMovement extends MapBasedMovement {
     public MapRoomMovement(MapRoomMovement proto) {
         super(proto);
         this.groupSettings = proto.groupSettings;
+        this.modelSettings = proto.modelSettings;
         this.schedule = new Schedule(proto.groupSettings, proto.randomHelper);
         this.randomHelper = proto.randomHelper;
         this.enterExitHelper = proto.enterExitHelper;
         this.chanceForUbahn = proto.chanceForUbahn;
         this.pathFinder = proto.pathFinder;
         this.allRoutes = proto.allRoutes;
-        this.roomNodes = proto.roomNodes;
+        this.rooms = proto.rooms;
 
         this.byUbahn = this.randomHelper.getRandomDouble() < this.chanceForUbahn;
         initEnterExitTime();
@@ -108,51 +105,11 @@ public class MapRoomMovement extends MapBasedMovement {
         this.exitTime = this.enterExitHelper.exitTimeForSchedule(schedule, byUbahn, enterTime);
     }
 
-    private List<MapNode> generatePointRoutes(List<MapRoute> tempRoutes, String fileName, String lrFileName, SimMap map) {
-
-        WKTReader reader = new WKTReader();
-        List<Coord> points;
-        File routeFile;
-
-        boolean mirror = map.isMirrored();
-        double xOffset = map.getOffset().getX();
-        double yOffset = map.getOffset().getY();
-
-        try {
-            routeFile = new File(lrFileName);
-            points = reader.readPoints(routeFile);
-        }
-        catch (IOException ioe){
-            throw new SettingsError("Couldn't read MapRoute-data file " +
-                    fileName + 	" (cause: " + ioe.getMessage() + ")");
-        }
-
-        for (Coord point : points) {
-            if (mirror) {
-                point.setLocation(point.getX(), -point.getY());
-            }
-            point.translate(xOffset, yOffset);
-        }
-
-        Set<MapNode> roomNodes = new HashSet<>();
-        for (MapRoute route : tempRoutes) {
-            for (MapNode node : route.getStops()) {
-                for (Coord point : points) {
-                    if (node.getLocation().equals(point)) {
-                        roomNodes.add(node);
-                    }
-                }
-            }
-        }
-
-        return new ArrayList<>(roomNodes);
-    }
-
     @Override
     public Path getPath() {
         Path p = new Path(generateSpeed());
 
-        MapNode to = roomNodes.get(randomHelper.getRandomIntBetween(0, roomNodes.size()));
+        MapNode to = rooms.get(randomHelper.getRandomIntBetween(0, rooms.size())).getNode();
 
         List<MapNode> nodePath = pathFinder.getShortestPath(lastMapNode, to);
 
@@ -175,7 +132,7 @@ public class MapRoomMovement extends MapBasedMovement {
     @Override
     public Coord getInitialLocation() {
         if (lastMapNode == null) {
-            lastMapNode = roomNodes.get(randomHelper.getRandomIntBetween(0, roomNodes.size()));
+            lastMapNode = rooms.get(randomHelper.getRandomIntBetween(0, rooms.size())).getNode();
         }
 
         return lastMapNode.getLocation().clone();
