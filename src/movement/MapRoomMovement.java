@@ -76,7 +76,6 @@ public class MapRoomMovement extends MapBasedMovement {
         roomHelper = RoomHelper.getInstance();
         pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
 
-        // @TODO: @Patrick here query RoomHelper for rooms according to user group
         rooms = roomHelper.getAllRooms();
         this.schedule = new Schedule(groupSettings, randomHelper, roomHelper.utilization);
         //rooms = roomHelper.getRoomsWithType(RoomType.ENTRY_EXIT);
@@ -129,16 +128,21 @@ public class MapRoomMovement extends MapBasedMovement {
         MapNode to;
         final int curTime = (int)SimClock.getTime();
         final int timeInsecurity = 10;
-        ScheduleSlot nextSlot = this.schedule.getNextScheduleSlot(curTime - timeInsecurity);
-        ScheduleSlot activeSlot = this.schedule.getActiveScheduleSlot(curTime);
-        final int fiveMinutes = 300;
-        if (nextSlot != null && nextSlot.getStartTime() - curTime < fiveMinutes) {
-            to = nextSlot.getRoom().getNode();
-        } else if (activeSlot != null) {
-            to = activeSlot.getRoom().getNode();
+        if (curTime + timeInsecurity > this.exitTime) {
+            List<Room> enterExitRooms = this.roomHelper.getRoomsWithType(RoomType.ENTRY_EXIT);
+            to = enterExitRooms.get(this.randomHelper.getRandomIntBetween(0, enterExitRooms.size())).getNode();
         } else {
-            to = this.roomHelper.getOtherRooms().get(this.randomHelper.getRandomIntBetween(0,
-                    this.roomHelper.getOtherRooms().size())).getNode();
+            ScheduleSlot nextSlot = this.schedule.getNextScheduleSlot(curTime - timeInsecurity);
+            ScheduleSlot activeSlot = this.schedule.getActiveScheduleSlot(curTime);
+            final int fiveMinutes = 300;
+            if (nextSlot != null && nextSlot.getStartTime() - curTime < fiveMinutes) {
+                to = nextSlot.getRoom().getNode();
+            } else if (activeSlot != null) {
+                to = activeSlot.getRoom().getNode();
+            } else {
+                List<Room> otherRomms = this.roomHelper.getRoomsWithType(RoomType.OTHER);
+                to = otherRomms.get(this.randomHelper.getRandomIntBetween(0, otherRomms.size())).getNode();
+            }
         }
 
         if (this.lastMapNode == to) {
@@ -166,11 +170,11 @@ public class MapRoomMovement extends MapBasedMovement {
     @Override
     public Coord getInitialLocation() {
         if (nextPathAvailable() > 100000) {
-            return null;
+            return new Coord(0,0);
         }
         if (lastMapNode == null) {
-            lastMapNode = this.roomHelper.getOtherRooms().get(
-                    this.randomHelper.getRandomIntBetween(0, this.roomHelper.getOtherRooms().size())).getNode();
+            List<Room> enterExitRooms = this.roomHelper.getRoomsWithType(RoomType.ENTRY_EXIT);
+            lastMapNode = enterExitRooms.get(this.randomHelper.getRandomIntBetween(0, enterExitRooms.size())).getNode();
         }
 
         return lastMapNode.getLocation().clone();
@@ -192,7 +196,7 @@ public class MapRoomMovement extends MapBasedMovement {
 
     @Override
     public boolean isActive() {
-        return SimClock.getIntTime() >= this.enterTime && SimClock.getIntTime() <= this.exitTime;
+        return SimClock.getIntTime() >= this.enterTime - 600 && SimClock.getIntTime() <= this.exitTime + 600;
     }
 
     @Override
@@ -203,11 +207,11 @@ public class MapRoomMovement extends MapBasedMovement {
         } else if ( curTime > this.exitTime ) {
             return Double.MAX_VALUE;
         }
-        ScheduleSlot activeSlot = this.schedule.getActiveScheduleSlot((int)curTime);
+        ScheduleSlot activeSlot = this.schedule.getActiveScheduleSlot((int)curTime - 1);
         if (activeSlot != null) {
             return activeSlot.getEndTime();
         }
-        ScheduleSlot nextSlot = this.schedule.getNextScheduleSlot((int)curTime);
+        ScheduleSlot nextSlot = this.schedule.getNextScheduleSlot((int)curTime + 1);
         if (nextSlot != null) {
             return this.randomHelper.getNormalRandomWithMeanAndStddev(
                     nextSlot.getStartTime() - this.StartPeakEnterTimeDifference, this.EnterLectureStddev);

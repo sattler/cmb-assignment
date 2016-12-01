@@ -32,7 +32,7 @@ public class RoomHelper {
     public RoomHelper(Settings modelSettings, List<MapRoute> routes, SimMap map) {
         this.readAllRooms(modelSettings, routes, map);
         this.utilization = new HashMap<>();
-        for (Room room: this.rooms) {
+        for (Room room: this.getRoomsWithType(RoomType.LECTURE_ROOM)) {
             this.utilization.put(room, null);
         }
     }
