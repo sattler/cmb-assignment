@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
  */
 public class RoomHelper {
 
-    public static final String LECTURE_ROOM_PREFIX_S = "lr";
-    public static final String LECTURE_ROOM_COUNT_S = "lrCount";
+    public static final String ROOM_PREFIX_S = "room";
+    public static final String ROOM_COUNT_S = "roomCount";
     public static final String ROUTE_FILE_S = "routeFile";
     public static final String ROOM_CAPACITY_OTHER_I = "roomCapacityOther";
 
@@ -43,18 +43,14 @@ public class RoomHelper {
         return rooms;
     }
 
-    public List<Room> getLectureRooms(){
-        return rooms.stream().filter(x -> x.getType() == RoomType.LECTURE_ROOM).collect(Collectors.toList());
-    }
-
-    public List<Room> getOtherRooms() {
-        return rooms.stream().filter(x -> x.getType() != RoomType.LECTURE_ROOM).collect(Collectors.toList());
+    public List<Room> getRoomsWithType(RoomType type){
+        return rooms.stream().filter(x -> x.getType() == type).collect(Collectors.toList());
     }
 
     private void readAllRooms(Settings settings, List<MapRoute> routes, SimMap map) {
         rooms = new ArrayList<>();
         roomNodes = getNodesForAllPointsInMap(settings, routes, map);
-        rooms.addAll(readLectureRooms(settings, map));
+        rooms.addAll(readConfiguredRooms(settings, map));
         rooms.addAll(readOtherRooms(settings));
     }
 
@@ -88,18 +84,18 @@ public class RoomHelper {
         return roomNodes;
     }
 
-    private List<Room> readLectureRooms(Settings settings, SimMap map) {
+    private List<Room> readConfiguredRooms(Settings settings, SimMap map) {
 
         List<Room> lectureRooms = new ArrayList<>();
 
-        int count = settings.getInt(LECTURE_ROOM_COUNT_S);
+        int count = settings.getInt(ROOM_COUNT_S);
 
         for (int i=1; i <= count; i++) {
-            double[] raw = settings.getCsvDoubles(LECTURE_ROOM_PREFIX_S + i);
+            double[] raw = settings.getCsvDoubles(ROOM_PREFIX_S + i);
             Coord point = pointToMapCoord(raw[0], raw[1], map);
             for (MapNode node : roomNodes) {
                 if (node.getLocation().equals(point)) {
-                    lectureRooms.add(new Room(node, (int)raw[2], RoomType.LECTURE_ROOM));
+                    lectureRooms.add(new Room(node, (int)raw[2], RoomType.valueOf((int)raw[3])));
                     roomNodes.remove(node);
                     break;
                 }
