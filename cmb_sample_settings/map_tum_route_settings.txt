@@ -1,7 +1,7 @@
 # Settings for map route based movement in a triangle.
 
 Scenario.name = MapRouteMovement
-Scenario.endTime = 6000
+Scenario.endTime = 46800
 Scenario.updateInterval = 0.05
 Scenario.simulateConnections = false
 MovementModel.worldSize = 1000,1000
@@ -20,23 +20,22 @@ Group1.nrofHosts = 10
 Group1.nrofInterfaces = 1
 Group1.interface1 = myInterface
 Group1.movementModel = MapRoomMovement
-#Group1.movementModel = MapRouteMovement
 Group1.router = PassiveRouter
 Group1.averageCoursesPerDaySetting = 2
-Group1.scheduleTime = 8, 12, 14, 16
+Group1.scheduleTime = 3600, 10800, 18000, 25200
 Group1.chanceForUbahn = 0.8
 Group1.lectureParticipationChance = 0.9
-Group1.startPeakEnterTimeDifference = 1
-Group1.enterLectureStddev = 1
-Group1.exitLectureStddev = 1
-Group1.endEnterLectureDifference = 1
+Group1.startPeakEnterTimeDifference = 600
+Group1.enterLectureStddev = 1800
+Group1.exitLectureStddev = 600
+Group1.endEnterLectureDifference = 1200
 Group1.enterChanceWithoutSchedule = 0.8
-Group1.enterStartTime = 8
-Group1.enterEndTime = 12
-Group1.exitStartTime = 14
-Group1.exitEndTime = 18
-Group1.enterExitStddev = 1
-Group1.timeInterallsPerMinute = 1
+Group1.enterStartTime = 0
+Group1.enterEndTime = 144000
+Group1.exitStartTime = 14400
+Group1.exitEndTime = 46800
+Group1.enterExitStddev = 4000
+Group1.timeInterallsPerMinute = 60
 
 
 ## Map based movement -movement model specific settings
