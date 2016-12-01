@@ -6,43 +6,44 @@ package movement;
 
 import core.Coord;
 import core.Settings;
-import core.SettingsError;
 import core.SimClock;
-import input.WKTReader;
-import movement.helper.EnterExitHelper;
-import movement.helper.RandomHelper;
-import movement.helper.Schedule;
+import movement.helper.*;
 import movement.map.DijkstraPathFinder;
 import movement.map.MapNode;
 import movement.map.MapRoute;
-import movement.map.SimMap;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-import static movement.map.MapRoute.CIRCULAR;
-import static movement.map.MapRoute.PINGPONG;
 
 /**
  * Map based movement model that uses predetermined paths within the map area.
  * Predetermined paths are generated between point objects found in the map file.
  * Nodes using this model (can) stop on every route waypoint and find their
- * way to next waypoint using {@link DijkstraPathFinder}. There can be
- * different type of routes; see {@link #ROUTE_TYPE_S}.
+ * way to next waypoint using {@link DijkstraPathFinder}.
  */
-public class MapRoomMovement extends MapRouteMovement {
+public class MapRoomMovement extends MapBasedMovement {
 
-    public static final String CHANCE_FOR_UBAHN_SETTING = "ChanceForUbahn";
 
+    public static final String MAP_ROOM_MOVEMENT_NS = "MapRoomMovement";
+    public static final String ROUTE_FILE_S = "routeFile";
+    public static final String ROUTE_TYPE_S = "routeType";
+    public static final String CHANCE_FOR_UBAHN_SETTING = "chanceForUbahn";
+
+    private String routeFileName;
+    private int routeType;
+    private DijkstraPathFinder pathFinder;
+    private List<MapRoute> allRoutes = null;
+
+    private Settings modelSettings;
+    private Settings groupSettings;
+
+    private List<Room> rooms;
     private RandomHelper randomHelper;
+    private RoomHelper roomHelper;
     private EnterExitHelper enterExitHelper;
     private double chanceForUbahn;
 
     private Schedule schedule;
-    private Settings settings;
     private int enterTime;
     private int exitTime;
     private boolean byUbahn;
@@ -54,16 +55,29 @@ public class MapRoomMovement extends MapRouteMovement {
      */
     public MapRoomMovement(Settings settings) {
         super(settings);
-        allRoutes = generatePointRoutes(allRoutes, routeFileName, routeType, getMap());
-        initFirstIndex(settings);
+        RandomHelper.createInstance(rng);
+        randomHelper = RandomHelper.getInstance();
 
-        this.settings = settings;
-        this.schedule = new Schedule(settings);
+        this.modelSettings = new Settings(MAP_ROOM_MOVEMENT_NS);
+        this.groupSettings = settings;
+        this.schedule = new Schedule(groupSettings, randomHelper);
+
+        routeFileName = modelSettings.getSetting(ROUTE_FILE_S);
+        routeType = modelSettings.getInt(ROUTE_TYPE_S);
+        allRoutes = MapRoute.readRoutes(routeFileName, routeType, getMap());
+        RoomHelper.createInstance(modelSettings, allRoutes, getMap());
+        roomHelper = RoomHelper.getInstance();
+        pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
+
+        // @TODO: @Patrick here query RoomHelper for rooms according to user group
+        rooms = roomHelper.getAllRooms();
+        //rooms = roomHelper.getLectureRooms();
+        //rooms = roomHelper.getOtherRooms();
 
         RandomHelper.createInstance(MovementModel.rng);
         this.randomHelper = RandomHelper.getInstance();
 
-        this.chanceForUbahn = settings.getDouble(CHANCE_FOR_UBAHN_SETTING);
+        this.chanceForUbahn = groupSettings.getDouble(CHANCE_FOR_UBAHN_SETTING);
         this.byUbahn = this.randomHelper.getRandomDouble() < this.chanceForUbahn;
 
         this.enterExitHelper = new EnterExitHelper(settings);
@@ -72,11 +86,15 @@ public class MapRoomMovement extends MapRouteMovement {
 
     public MapRoomMovement(MapRoomMovement proto) {
         super(proto);
-        this.settings = proto.settings;
-        this.schedule = new Schedule(proto.settings);
+        this.groupSettings = proto.groupSettings;
+        this.modelSettings = proto.modelSettings;
+        this.schedule = new Schedule(proto.groupSettings, proto.randomHelper);
         this.randomHelper = proto.randomHelper;
         this.enterExitHelper = proto.enterExitHelper;
         this.chanceForUbahn = proto.chanceForUbahn;
+        this.pathFinder = proto.pathFinder;
+        this.allRoutes = proto.allRoutes;
+        this.rooms = proto.rooms;
 
         this.byUbahn = this.randomHelper.getRandomDouble() < this.chanceForUbahn;
         initEnterExitTime();
@@ -87,58 +105,48 @@ public class MapRoomMovement extends MapRouteMovement {
         this.exitTime = this.enterExitHelper.exitTimeForSchedule(schedule, byUbahn, enterTime);
     }
 
-    private List<MapRoute> generatePointRoutes(List<MapRoute> tempRoutes, String fileName, int type, SimMap map) {
+    @Override
+    public Path getPath() {
+        Path p = new Path(generateSpeed());
 
-        List<MapRoute> routes = new ArrayList<>();
-        WKTReader reader = new WKTReader();
-        List<Coord> points;
-        File routeFile;
+        MapNode to = rooms.get(randomHelper.getRandomIntBetween(0, rooms.size())).getNode();
 
-        boolean mirror = map.isMirrored();
-        double xOffset = map.getOffset().getX();
-        double yOffset = map.getOffset().getY();
+        List<MapNode> nodePath = pathFinder.getShortestPath(lastMapNode, to);
 
-        if (type != CIRCULAR && type != PINGPONG) {
-            throw new SettingsError("Invalid route type (" + type + ")");
+        // this assertion should never fire if the map is checked in read phase
+        assert nodePath.size() > 0 : "No path from " + lastMapNode + " to " +
+                to + ". The simulation map isn't fully connected";
+
+        for (MapNode node : nodePath) { // create a Path from the shortest path
+            p.addWaypoint(node.getLocation());
         }
 
-        try {
-            routeFile = new File(fileName);
-            points = reader.readPoints(routeFile);
-        }
-        catch (IOException ioe){
-            throw new SettingsError("Couldn't read MapRoute-data file " +
-                    fileName + 	" (cause: " + ioe.getMessage() + ")");
-        }
+        lastMapNode = to;
 
-        for (Coord point : points) {
-            if (mirror) {
-                point.setLocation(point.getX(), -point.getY());
-            }
-            point.translate(xOffset, yOffset);
-        }
-
-        HashMap<Coord, MapNode> roomMapNode = new HashMap<>();
-        for (MapRoute route : tempRoutes) {
-            for (MapNode node : route.getStops()) {
-                for (Coord point : points) {
-                    if (node.getLocation().equals(point)) {
-                        roomMapNode.put(point, node);
-                    }
-                }
-            }
-        }
-
-        for (MapNode nOutside : roomMapNode.values()){
-            for (MapNode nInside : roomMapNode.values()){
-                if (!nOutside.equals(nInside)) {
-                    routes.add(new MapRoute(type, pathFinder.getShortestPath(nOutside, nInside)));
-                }
-            }
-        }
-        return routes;
+        return p;
     }
 
+    /**
+     * Returns the first stop on the route which is one of the lecture rooms
+     */
+    @Override
+    public Coord getInitialLocation() {
+        if (lastMapNode == null) {
+            lastMapNode = rooms.get(randomHelper.getRandomIntBetween(0, rooms.size())).getNode();
+        }
+
+        return lastMapNode.getLocation().clone();
+    }
+
+    @Override
+    public Coord getLastLocation() {
+        if (lastMapNode != null) {
+            return lastMapNode.getLocation().clone();
+        } else {
+            return null;
+        }
+    }
+    
     @Override
     public MapRoomMovement replicate() {
         return new MapRoomMovement(this);

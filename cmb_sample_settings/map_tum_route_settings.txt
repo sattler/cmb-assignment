@@ -16,27 +16,46 @@ myInterface.transmitSpeed = 0
 Scenario.nrofHostGroups = 1
 
 Group1.groupID = x
-Group1.nrofHosts = 5
+Group1.nrofHosts = 10
 Group1.nrofInterfaces = 1
 Group1.interface1 = myInterface
 Group1.movementModel = MapRoomMovement
 #Group1.movementModel = MapRouteMovement
-Group1.routeFile = data/TUM/tum.wkt
-Group1.routeType = 1
 Group1.router = PassiveRouter
+Group1.averageCoursesPerDaySetting = 2
+Group1.scheduleTime = 8, 12, 14, 16
+Group1.chanceForUbahn = 0.8
+Group1.lectureParticipationChance = 0.9
+Group1.startPeakEnterTimeDifference = 1
+Group1.enterLectureStddev = 1
+Group1.exitLectureStddev = 1
+Group1.endEnterLectureDifference = 1
+Group1.enterChanceWithoutSchedule = 0.8
+Group1.enterStartTime = 8
+Group1.enterEndTime = 12
+Group1.exitStartTime = 14
+Group1.exitEndTime = 18
+Group1.enterExitStddev = 1
+Group1.timeInterallsPerMinute = 1
+
 
 ## Map based movement -movement model specific settings
 MapBasedMovement.nrofMapFiles = 1
 MapBasedMovement.mapFile1 = data/TUM/tum.wkt
-#MapBasedMovement.nrofRooms = 4
-# HS1
-#MapBasedMovement.room1 = POINT (248.22498023681035 134.07123072118927)
-# HS2
-#MapBasedMovement.room2 = POINT (225.12582498103558 104.04233471619116)
-# HS3
-#MapBasedMovement.room3 = POINT (194.08076941626237 112.78249675582326)
-# Bib
-#MapBasedMovement.room4 = POINT (70.84513840790459 145.81824011383205)
+MapRoomMovement.routeFile = data/TUM/tum.wkt
+MapRoomMovement.routeType = 1
+MapRoomMovement.roomCapacityOther = 25
+MapRoomMovement.lrCount = 8
+MapRoomMovement.lr1 = 248.22498023681035, 134.07123072118927, 150
+MapRoomMovement.lr2 = 225.12582498103558, 104.04233471619116, 100
+MapRoomMovement.lr3 = 194.08076941626237, 112.78249675582326, 75
+MapRoomMovement.lr4 = 131.10611782635593, 127.88558993669133, 50
+MapRoomMovement.lr5 = 116.8912097672152, 167.03893318730695, 45
+MapRoomMovement.lr6 = 82.47616920297982, 176.2661542081527, 40
+MapRoomMovement.lr7 = 70.84513840790459, 145.81824011383205, 35
+MapRoomMovement.lr8 = 187.716365711004, 163.54755226050048, 30
+#MapRoomMovement.lr9 = 150.80748162762112, 160.5549400375235, 25
+
 
 # Reports
 Report.nrofReports = 1

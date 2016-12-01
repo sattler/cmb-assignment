@@ -3,24 +3,20 @@ package movement.helper;
 import core.Settings;
 import util.Tuple;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by netjinho on 29-11-2016.
  */
 public class Schedule implements ScheduleInterface{
 
-    public static final String SCHEDULE_TIME_SETTING = "ScheduleTime";
-    public static final String AVERAGE_COURSES_PER_DAY_SETTING = "AverageCoursesPerDaySetting";
-    public static final String FIXED_SCHEDULE_FILE_SETTING = "FixedScheduleFile";
+    public static final String SCHEDULE_TIME_SETTING = "scheduleTime";
+    public static final String AVERAGE_COURSES_PER_DAY_SETTING = "averageCoursesPerDaySetting";
+    public static final String FIXED_SCHEDULE_FILE_SETTING = "fixedScheduleFile";
 
     private List<Tuple<Integer, Integer>> timeSlots;
 
-    public Schedule(Settings settings){
-        RandomHelper random = RandomHelper.getInstance();
+    public Schedule(Settings settings, RandomHelper random){
 
         timeSlots = new ArrayList<>();
 
@@ -34,7 +30,7 @@ public class Schedule implements ScheduleInterface{
         }
 
         List<Integer> endTimes = new ArrayList<>(startTimes);
-        startTimes.remove(startTimes.size());
+        startTimes.remove(startTimes.size()-1);
         endTimes.remove(0);
 
         for (int i = 0; i < coursesPerDay; i++){
