@@ -71,8 +71,8 @@ public class MapRoomMovement extends MapBasedMovement {
 
         // @TODO: @Patrick here query RoomHelper for rooms according to user group
         rooms = roomHelper.getAllRooms();
-        //rooms = roomHelper.getLectureRooms();
-        //rooms = roomHelper.getOtherRooms();
+        //rooms = roomHelper.getRoomsWithType(RoomType.ENTRY_EXIT);
+        //rooms = roomHelper.getRoomsWithType(RoomType.OTHER);
 
         RandomHelper.createInstance(MovementModel.rng);
         this.randomHelper = RandomHelper.getInstance();
