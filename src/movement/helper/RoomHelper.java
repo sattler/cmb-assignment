@@ -27,6 +27,15 @@ public class RoomHelper {
     private Set<MapNode> roomNodes;
     private List<Room> rooms;
     private static RoomHelper instance = null;
+    public Map<Room, Map<ScheduleSlot, Integer>> utilization;
+
+    public RoomHelper(Settings modelSettings, List<MapRoute> routes, SimMap map) {
+        this.readAllRooms(modelSettings, routes, map);
+        this.utilization = new HashMap<>();
+        for (Room room: this.rooms) {
+            this.utilization.put(room, null);
+        }
+    }
 
     public static RoomHelper getInstance() {
         return RoomHelper.instance;
@@ -34,8 +43,7 @@ public class RoomHelper {
 
     public static void createInstance(Settings modelSettings, List<MapRoute> routes, SimMap map) {
         if (RoomHelper.instance == null) {
-            RoomHelper.instance = new RoomHelper();
-            RoomHelper.instance.readAllRooms(modelSettings, routes, map);
+            RoomHelper.instance = new RoomHelper(modelSettings, routes, map);
         }
     }
 

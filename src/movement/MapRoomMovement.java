@@ -28,6 +28,8 @@ public class MapRoomMovement extends MapBasedMovement {
     public static final String ROUTE_FILE_S = "routeFile";
     public static final String ROUTE_TYPE_S = "routeType";
     public static final String CHANCE_FOR_UBAHN_SETTING = "chanceForUbahn";
+    public static final String START_PEAK_ENTER_TIME_DIFFERENCE_SETTING = "startPeakEnterTimeDifference";
+    public static final String ENTER_LECTURE_STDDEV_SETTING = "enterLectureStddev";
 
     private String routeFileName;
     private int routeType;
@@ -48,6 +50,9 @@ public class MapRoomMovement extends MapBasedMovement {
     private int exitTime;
     private boolean byUbahn;
 
+    private final int StartPeakEnterTimeDifference;
+    private final double EnterLectureStddev;
+
 
     /**
      * Creates a new movement model based on a Settings object's settings.
@@ -60,7 +65,9 @@ public class MapRoomMovement extends MapBasedMovement {
 
         this.modelSettings = new Settings(MAP_ROOM_MOVEMENT_NS);
         this.groupSettings = settings;
-        this.schedule = new Schedule(groupSettings, randomHelper);
+
+        EnterLectureStddev = settings.getDouble(ENTER_LECTURE_STDDEV_SETTING);
+        StartPeakEnterTimeDifference = settings.getInt(START_PEAK_ENTER_TIME_DIFFERENCE_SETTING);
 
         routeFileName = modelSettings.getSetting(ROUTE_FILE_S);
         routeType = modelSettings.getInt(ROUTE_TYPE_S);
@@ -71,6 +78,7 @@ public class MapRoomMovement extends MapBasedMovement {
 
         // @TODO: @Patrick here query RoomHelper for rooms according to user group
         rooms = roomHelper.getAllRooms();
+        this.schedule = new Schedule(groupSettings, randomHelper, roomHelper.utilization);
         //rooms = roomHelper.getLectureRooms();
         //rooms = roomHelper.getOtherRooms();
 
@@ -88,28 +96,54 @@ public class MapRoomMovement extends MapBasedMovement {
         super(proto);
         this.groupSettings = proto.groupSettings;
         this.modelSettings = proto.modelSettings;
-        this.schedule = new Schedule(proto.groupSettings, proto.randomHelper);
+        this.schedule = new Schedule(proto.groupSettings, proto.randomHelper, proto.roomHelper.utilization);
         this.randomHelper = proto.randomHelper;
         this.enterExitHelper = proto.enterExitHelper;
         this.chanceForUbahn = proto.chanceForUbahn;
         this.pathFinder = proto.pathFinder;
         this.allRoutes = proto.allRoutes;
         this.rooms = proto.rooms;
+        this.roomHelper = proto.roomHelper;
+
+        this.EnterLectureStddev = proto.EnterLectureStddev;
+        this.StartPeakEnterTimeDifference = proto.StartPeakEnterTimeDifference;
 
         this.byUbahn = this.randomHelper.getRandomDouble() < this.chanceForUbahn;
-        initEnterExitTime();
+        this.initEnterExitTime();
     }
 
     private void initEnterExitTime() {
-        this.enterTime = this.enterExitHelper.enterTimeForSchedule(schedule, byUbahn);
-        this.exitTime = this.enterExitHelper.exitTimeForSchedule(schedule, byUbahn, enterTime);
+        Integer enterTime = this.enterExitHelper.enterTimeForSchedule(schedule, byUbahn);
+        this.enterTime = enterTime != null ? enterTime : Integer.MAX_VALUE;
+        if (enterTime == null) {
+            this.exitTime = this.enterTime;
+        } else {
+            this.exitTime = this.enterExitHelper.exitTimeForSchedule(schedule, byUbahn, enterTime);
+        }
     }
 
     @Override
     public Path getPath() {
         Path p = new Path(generateSpeed());
 
-        MapNode to = rooms.get(randomHelper.getRandomIntBetween(0, rooms.size())).getNode();
+        MapNode to;
+        final int curTime = (int)SimClock.getTime();
+        final int timeInsecurity = 10;
+        ScheduleSlot nextSlot = this.schedule.getNextScheduleSlot(curTime - timeInsecurity);
+        ScheduleSlot activeSlot = this.schedule.getActiveScheduleSlot(curTime);
+        final int fiveMinutes = 300;
+        if (nextSlot != null && nextSlot.getStartTime() - curTime < fiveMinutes) {
+            to = nextSlot.getRoom().getNode();
+        } else if (activeSlot != null) {
+            to = activeSlot.getRoom().getNode();
+        } else {
+            to = this.roomHelper.getOtherRooms().get(this.randomHelper.getRandomIntBetween(0,
+                    this.roomHelper.getOtherRooms().size())).getNode();
+        }
+
+        if (this.lastMapNode == to) {
+            return null;
+        }
 
         List<MapNode> nodePath = pathFinder.getShortestPath(lastMapNode, to);
 
@@ -131,8 +165,12 @@ public class MapRoomMovement extends MapBasedMovement {
      */
     @Override
     public Coord getInitialLocation() {
+        if (nextPathAvailable() > 100000) {
+            return null;
+        }
         if (lastMapNode == null) {
-            lastMapNode = rooms.get(randomHelper.getRandomIntBetween(0, rooms.size())).getNode();
+            lastMapNode = this.roomHelper.getOtherRooms().get(
+                    this.randomHelper.getRandomIntBetween(0, this.roomHelper.getOtherRooms().size())).getNode();
         }
 
         return lastMapNode.getLocation().clone();
@@ -165,6 +203,15 @@ public class MapRoomMovement extends MapBasedMovement {
         } else if ( curTime > this.exitTime ) {
             return Double.MAX_VALUE;
         }
-        return curTime;
+        ScheduleSlot activeSlot = this.schedule.getActiveScheduleSlot((int)curTime);
+        if (activeSlot != null) {
+            return activeSlot.getEndTime();
+        }
+        ScheduleSlot nextSlot = this.schedule.getNextScheduleSlot((int)curTime);
+        if (nextSlot != null) {
+            return this.randomHelper.getNormalRandomWithMeanAndStddev(
+                    nextSlot.getStartTime() - this.StartPeakEnterTimeDifference, this.EnterLectureStddev);
+        }
+        return this.exitTime;
     }
 }

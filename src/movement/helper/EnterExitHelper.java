@@ -54,7 +54,10 @@ public class EnterExitHelper {
     public Integer enterTimeForSchedule(ScheduleInterface schedule, boolean byUbahn) {
         int[] startTimes = schedule.getStartTimesSorted();
         double normalEnterTime = random.getNormalRandomWithMeanAndStddev(
-                (double)(this.EnterStartTime-this.EnterEndTime), this.EnterExitStddev);
+                (double)(this.EnterEndTime+this.EnterStartTime)/2., this.EnterExitStddev);
+        if (normalEnterTime < 0) {
+            normalEnterTime = 0;
+        }
         if (normalEnterTime < this.EnterStartTime) {
             normalEnterTime = this.EnterStartTime;
         }
@@ -66,6 +69,9 @@ public class EnterExitHelper {
                 double enterTime = random.getNormalRandomWithMeanAndStddev(
                         (double)(startTime - this.StartPeakEnterTimeDifference),
                         this.EnterLectureStddev);
+                if (enterTime < 0) {
+                    enterTime = 0;
+                }
                 if (enterTime > normalEnterTime) {
                     break;
                 }
@@ -92,7 +98,7 @@ public class EnterExitHelper {
     public Integer exitTimeForSchedule(ScheduleInterface schedule, boolean byUbahn, int minExitTime) {
         int[] endTimes = schedule.getEndTimesSorted();
         double normalExitTime = random.getNormalRandomWithMeanAndStddev(
-                (double)(this.ExitStartTime-this.ExitEndTime), this.EnterExitStddev);
+                (double)(this.ExitStartTime+this.ExitEndTime)/2., this.EnterExitStddev);
         if (normalExitTime < this.ExitStartTime || normalExitTime > this.EnterEndTime) {
             normalExitTime = this.EnterStartTime;
         }
