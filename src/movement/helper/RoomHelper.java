@@ -55,6 +55,17 @@ public class RoomHelper {
         return rooms.stream().filter(x -> x.getType() == type).collect(Collectors.toList());
     }
 
+    public Room getRoomAccordingToProbability(RoomType type, double random) {
+        double cumulativeProbability = 0;
+        for (Room room : getRoomsWithType(type)) {
+            cumulativeProbability += room.getProbability();
+            if (random <= cumulativeProbability) {
+                return room;
+            }
+        }
+        return null;
+    }
+
     private void readAllRooms(Settings settings, List<MapRoute> routes, SimMap map) {
         rooms = new ArrayList<>();
         roomNodes = getNodesForAllPointsInMap(settings, routes, map);
@@ -94,7 +105,7 @@ public class RoomHelper {
 
     private List<Room> readConfiguredRooms(Settings settings, SimMap map) {
 
-        List<Room> lectureRooms = new ArrayList<>();
+        List<Room> rooms = new ArrayList<>();
 
         int count = settings.getInt(ROOM_COUNT_S);
 
@@ -103,14 +114,31 @@ public class RoomHelper {
             Coord point = pointToMapCoord(raw[0], raw[1], map);
             for (MapNode node : roomNodes) {
                 if (node.getLocation().equals(point)) {
-                    lectureRooms.add(new Room(node, (int)raw[2], RoomType.valueOf((int)raw[3])));
+                    Room room = new Room(node, (int)raw[2], RoomType.valueOf((int)raw[3]));
+                    if (room.getType() == RoomType.ENTRY_EXIT) {
+                        room.setProbability(raw[4]);
+                    }
+                    rooms.add(room);
                     roomNodes.remove(node);
                     break;
                 }
             }
         }
 
-        return lectureRooms;
+        normalizeProbabilities(rooms);
+
+        return rooms;
+    }
+
+    private void normalizeProbabilities(List<Room> rooms) {
+        double cumulativeProbability = 0.0;
+        for (Room r : rooms) {
+            cumulativeProbability += r.getProbability();
+        }
+
+        for (Room r : rooms) {
+            r.setProbability(r.getProbability() / cumulativeProbability);
+        }
     }
 
     private List<Room> readOtherRooms(Settings settings) {

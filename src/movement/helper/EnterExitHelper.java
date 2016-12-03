@@ -19,7 +19,7 @@ public class EnterExitHelper {
     public static final String ENTER_END_TIME_SETTING = "enterEndTime";
     public static final String ENTER_START_TIME_SETTING = "enterStartTime";
     public static final String ENTER_CHANCE_WITHOUT_SCHEDULE_SETTING = "enterChanceWithoutSchedule";
-    public static final String TIME_INTERVALLS_PER_MINUTE_SETTING = "timeInterallsPerMinute";
+    public static final String TIME_INTERVALS_PER_MINUTE_SETTING = "timeIntervalsPerMinute";
 
     private final double LectureParticipationChance;
     private final int StartPeakEnterTimeDifference;
@@ -48,7 +48,7 @@ public class EnterExitHelper {
         ExitStartTime = settings.getInt(EXIT_START_TIME_SETTING);
         ExitEndTime = settings.getInt(EXIT_END_TIME_SETTING);
         EnterExitStddev = settings.getDouble(ENTER_EXIT_STDDEV_SETTING);
-        TimeIntervallsPerMinute = settings.getInt(TIME_INTERVALLS_PER_MINUTE_SETTING);
+        TimeIntervallsPerMinute = settings.getInt(TIME_INTERVALS_PER_MINUTE_SETTING);
     }
 
     public Integer enterTimeForSchedule(ScheduleInterface schedule, boolean byUbahn) {
@@ -58,11 +58,8 @@ public class EnterExitHelper {
         if (normalEnterTime < 0) {
             normalEnterTime = 0;
         }
-        if (normalEnterTime < this.EnterStartTime) {
+        if (normalEnterTime < this.EnterStartTime || normalEnterTime > this.EnterEndTime) {
             normalEnterTime = this.EnterStartTime;
-        }
-        if (normalEnterTime > this.EnterEndTime) {
-            return null;
         }
         for (int startTime: startTimes) {
             if (random.getRandomDouble() < LectureParticipationChance) {
