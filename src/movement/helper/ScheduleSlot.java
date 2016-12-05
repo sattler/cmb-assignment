@@ -8,11 +8,20 @@ public class ScheduleSlot {
     private int startTime;
     private int endTime;
     private Room room;
+    private boolean lunchSlot;
 
     ScheduleSlot(int startTime, int endTime, Room room) {
         this.startTime = startTime;
         this.endTime = endTime;
         this.room = room;
+        this.lunchSlot = false;
+    }
+
+    ScheduleSlot(int startTime, int endTime, Room room, boolean lunchSlot) {
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.room = room;
+        this.lunchSlot = lunchSlot;
     }
 
     ScheduleSlot(ScheduleSlot proto) {
@@ -35,6 +44,14 @@ public class ScheduleSlot {
 
     public void setRoom(Room room) {
         this.room = room;
+    }
+
+    public boolean isLunchSlot() {
+        return lunchSlot;
+    }
+
+    public int getDuration() {
+        return endTime - startTime;
     }
 
     @Override

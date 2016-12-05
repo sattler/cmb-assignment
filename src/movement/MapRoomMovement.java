@@ -209,7 +209,14 @@ public class MapRoomMovement extends MapBasedMovement {
 
     @Override
     public boolean isActive() {
-        return SimClock.getIntTime() >= this.enterTime - 60 && SimClock.getIntTime() <= this.exitTime + 60;
+        ScheduleSlot lunchSlot = this.schedule.getLunchTimeSlot();
+        int curTime = SimClock.getIntTime();
+        if (lunchSlot != null) {
+            return curTime >= this.enterTime - 5 * TimeIntervalsPerMinute && curTime <= lunchSlot.getStartTime() + 5 * TimeIntervalsPerMinute && curTime >= lunchSlot.getEndTime() - 5 * TimeIntervalsPerMinute &&
+                    curTime <= this.exitTime + 5 * TimeIntervalsPerMinute;
+        }
+        return curTime >= this.enterTime - 5 * TimeIntervalsPerMinute &&
+                curTime <= this.exitTime + 5 * TimeIntervalsPerMinute;
     }
 
     @Override
