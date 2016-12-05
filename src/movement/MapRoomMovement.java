@@ -31,6 +31,9 @@ public class MapRoomMovement extends MapBasedMovement {
     public static final String START_PEAK_ENTER_TIME_DIFFERENCE_SETTING = "startPeakEnterTimeDifference";
     public static final String ENTER_LECTURE_STDDEV_SETTING = "enterLectureStddev";
 
+    private final int StartPeakEnterTimeDifference;
+    private final double EnterLectureStddev;
+
     private String routeFileName;
     private int routeType;
     private DijkstraPathFinder pathFinder;
@@ -50,8 +53,7 @@ public class MapRoomMovement extends MapBasedMovement {
     private int exitTime;
     private boolean byUbahn;
 
-    private final int StartPeakEnterTimeDifference;
-    private final double EnterLectureStddev;
+    private boolean enterNextLectureRoom = false;
 
 
     /**
@@ -133,15 +135,22 @@ public class MapRoomMovement extends MapBasedMovement {
             to = enterExitRooms.get(this.randomHelper.getRandomIntBetween(0, enterExitRooms.size())).getNode();
         } else {
             ScheduleSlot nextSlot = this.schedule.getNextScheduleSlot(curTime - timeInsecurity);
-            ScheduleSlot activeSlot = this.schedule.getActiveScheduleSlot(curTime);
-            final int fiveMinutes = 300;
-            if (nextSlot != null && nextSlot.getStartTime() - curTime < fiveMinutes) {
+            if (this.enterNextLectureRoom) {
+                this.enterNextLectureRoom = false;
                 to = nextSlot.getRoom().getNode();
-            } else if (activeSlot != null) {
-                to = activeSlot.getRoom().getNode();
             } else {
-                List<Room> otherRomms = this.roomHelper.getRoomsWithType(RoomType.OTHER);
-                to = otherRomms.get(this.randomHelper.getRandomIntBetween(0, otherRomms.size())).getNode();
+                final int fiveMinutes = 300;
+                if (nextSlot != null && nextSlot.getStartTime() - curTime < fiveMinutes) {
+                    to = nextSlot.getRoom().getNode();
+                } else {
+                    ScheduleSlot activeSlot = this.schedule.getActiveScheduleSlot(curTime);
+                    if (activeSlot != null) {
+                        to = activeSlot.getRoom().getNode();
+                    } else {
+                        List<Room> otherRomms = this.roomHelper.getRoomsWithType(RoomType.OTHER);
+                        to = otherRomms.get(this.randomHelper.getRandomIntBetween(0, otherRomms.size())).getNode();
+                    }
+                }
             }
         }
 
@@ -169,7 +178,7 @@ public class MapRoomMovement extends MapBasedMovement {
      */
     @Override
     public Coord getInitialLocation() {
-        if (nextPathAvailable() > 100000) {
+        if (nextPathAvailable() == Double.MAX_VALUE) {
             return new Coord(0,0);
         }
         if (lastMapNode == null) {
@@ -196,7 +205,7 @@ public class MapRoomMovement extends MapBasedMovement {
 
     @Override
     public boolean isActive() {
-        return SimClock.getIntTime() >= this.enterTime - 600 && SimClock.getIntTime() <= this.exitTime + 600;
+        return SimClock.getIntTime() >= this.enterTime - 60 && SimClock.getIntTime() <= this.exitTime + 60;
     }
 
     @Override
@@ -207,14 +216,30 @@ public class MapRoomMovement extends MapBasedMovement {
         } else if ( curTime > this.exitTime ) {
             return Double.MAX_VALUE;
         }
+
         ScheduleSlot activeSlot = this.schedule.getActiveScheduleSlot((int)curTime - 1);
         if (activeSlot != null) {
             return activeSlot.getEndTime();
         }
+
         ScheduleSlot nextSlot = this.schedule.getNextScheduleSlot((int)curTime + 1);
         if (nextSlot != null) {
-            return this.randomHelper.getNormalRandomWithMeanAndStddev(
+            if (nextSlot.getRoom().getNode() == this.lastMapNode) {
+                return nextSlot.getEndTime();
+            }
+            this.enterNextLectureRoom = true;
+            double enterNextLectureTime = this.randomHelper.getNormalRandomWithMeanAndStddev(
                     nextSlot.getStartTime() - this.StartPeakEnterTimeDifference, this.EnterLectureStddev);
+            if (enterNextLectureTime < curTime) {
+                enterNextLectureTime = curTime;
+            }
+            if (enterNextLectureTime < nextSlot.getStartTime() - this.StartPeakEnterTimeDifference*2) {
+                enterNextLectureTime = nextSlot.getStartTime() - this.StartPeakEnterTimeDifference*2;
+            }
+            if (enterNextLectureTime > nextSlot.getStartTime() + this.StartPeakEnterTimeDifference) {
+                enterNextLectureTime = nextSlot.getStartTime() + this.StartPeakEnterTimeDifference;
+            }
+            return enterNextLectureTime;
         }
         return this.exitTime;
     }
