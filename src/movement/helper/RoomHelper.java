@@ -55,6 +55,20 @@ public class RoomHelper {
         return rooms.stream().filter(x -> x.getType() == type).collect(Collectors.toList());
     }
 
+    public Room getRandomEatingRoom() {
+        // TODO: For Hannes implement a better solution this is just temprary should return a randoom room in Magistrale
+        System.out.println("TODO: Hannes implement getRandomEatingRoom!");
+        List<Room> otherRooms = getRoomsWithType(RoomType.OTHER);
+        return otherRooms.get(RandomHelper.getInstance().getRandomIntBetween(0, otherRooms.size()));
+    }
+
+    public Room getMensaRoom() {
+        // TODO: For Hannes implement a better solution this is just temprary should return a special room or main entrance
+        System.out.println("TODO: Hannes implement getMensaRoom!");
+        List<Room> otherRooms = getRoomsWithType(RoomType.ENTRY_EXIT);
+        return otherRooms.get(RandomHelper.getInstance().getRandomIntBetween(0, otherRooms.size()));
+    }
+
     private void readAllRooms(Settings settings, List<MapRoute> routes, SimMap map) {
         rooms = new ArrayList<>();
         roomNodes = getNodesForAllPointsInMap(settings, routes, map);
