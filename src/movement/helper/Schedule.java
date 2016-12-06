@@ -15,7 +15,7 @@ public class Schedule implements ScheduleInterface{
     public static final String LUNCH_TIME_SETTING = "lunchTime";
     public static final String LUNCH_TIME_LENGTH_MEAN_SETTING = "lunchTimeLengthMean";
     public static final String LUNCH_TIME_LENGTH_STDDEV_SETTING = "lunchTimeLengthStddev";
-    public static final String TIME_INTERVALS_PER_MINUTE_SETTING = "timeInteralsPerMinute";
+    public static final String TIME_INTERVALS_PER_MINUTE_SETTING = "timeIntervalsPerMinute";
     public static final String CHANCE_FOR_MENSA_SETTING = "ChanceForMensa";
 
     private List<ScheduleSlot> timeSlots;

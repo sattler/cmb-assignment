@@ -35,7 +35,7 @@ Group1.enterEndTime = 21600
 Group1.exitStartTime = 28800
 Group1.exitEndTime = 50400
 Group1.enterExitStddev = 4000
-Group1.timeInterallsPerMinute = 60
+Group1.timeIntervalsPerMinute = 60
 
 
 ## Map based movement -movement model specific settings

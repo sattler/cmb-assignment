@@ -30,7 +30,7 @@ public class MapRoomMovement extends MapBasedMovement {
     public static final String CHANCE_FOR_UBAHN_SETTING = "chanceForUbahn";
     public static final String START_PEAK_ENTER_TIME_DIFFERENCE_SETTING = "startPeakEnterTimeDifference";
     public static final String ENTER_LECTURE_STDDEV_SETTING = "enterLectureStddev";
-    public static final String TIME_INTERVALS_PER_MINUTE_SETTING = "timeInteralsPerMinute";
+    public static final String TIME_INTERVALS_PER_MINUTE_SETTING = "timeIntervalsPerMinute";
 
     private final int StartPeakEnterTimeDifference;
     private final double EnterLectureStddev;
