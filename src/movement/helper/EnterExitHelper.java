@@ -32,7 +32,7 @@ public class EnterExitHelper {
     private final int ExitStartTime;
     private final int ExitEndTime;
     private final double EnterExitStddev;
-    private final int TimeIntervallsPerMinute;
+    private final int TimeIntervalsPerMinute;
 
     private RandomHelper random = RandomHelper.getInstance();
 
@@ -48,7 +48,7 @@ public class EnterExitHelper {
         ExitStartTime = settings.getInt(EXIT_START_TIME_SETTING);
         ExitEndTime = settings.getInt(EXIT_END_TIME_SETTING);
         EnterExitStddev = settings.getDouble(ENTER_EXIT_STDDEV_SETTING);
-        TimeIntervallsPerMinute = settings.getInt(TIME_INTERVALS_PER_MINUTE_SETTING);
+        TimeIntervalsPerMinute = settings.getInt(TIME_INTERVALS_PER_MINUTE_SETTING);
     }
 
     public Integer enterTimeForSchedule(ScheduleInterface schedule, boolean byUbahn) {
@@ -76,7 +76,7 @@ public class EnterExitHelper {
                     continue;
                 }
                 if (byUbahn) {
-                    return (int) (Math.round(enterTime / (double)(10 * TimeIntervallsPerMinute)) * (10 * TimeIntervallsPerMinute));
+                    return (int) (Math.round(enterTime / (double)(10 * TimeIntervalsPerMinute)) * (10 * TimeIntervalsPerMinute));
                 } else {
                     return (int) Math.round(enterTime);
                 }
@@ -84,7 +84,7 @@ public class EnterExitHelper {
         }
         if (random.getRandomDouble() < EnterChanceWithoutSchedule) {
             if (byUbahn) {
-                return (int) (Math.round(normalEnterTime / (double)(10 * TimeIntervallsPerMinute)) * (10 * TimeIntervallsPerMinute));
+                return (int) (Math.round(normalEnterTime / (double)(10 * TimeIntervalsPerMinute)) * (10 * TimeIntervalsPerMinute));
             } else {
                 return (int) Math.round(normalEnterTime);
             }
@@ -106,7 +106,7 @@ public class EnterExitHelper {
                     );
             if (normalExitTime < exitTime) {
                 if (byUbahn) {
-                    return (int) (Math.round(exitTime / (double)(10 * TimeIntervallsPerMinute)) * (10 * TimeIntervallsPerMinute));
+                    return (int) (Math.round(exitTime / (double)(10 * TimeIntervalsPerMinute)) * (10 * TimeIntervalsPerMinute));
                 } else {
                     return (int) Math.round(exitTime);
                 }
@@ -118,7 +118,7 @@ public class EnterExitHelper {
         }
 
         if (byUbahn) {
-            return (int) (Math.round(normalExitTime / (double)(10 * TimeIntervallsPerMinute)) * (10 * TimeIntervallsPerMinute));
+            return (int) (Math.round(normalExitTime / (double)(10 * TimeIntervalsPerMinute)) * (10 * TimeIntervalsPerMinute));
         } else {
             return (int) Math.round(normalExitTime);
         }
