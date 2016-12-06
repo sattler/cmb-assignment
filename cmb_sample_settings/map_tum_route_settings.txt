@@ -21,6 +21,7 @@ Group1.nrofInterfaces = 1
 Group1.interface1 = myInterface
 Group1.movementModel = MapRoomMovement
 Group1.router = PassiveRouter
+
 Group1.averageCoursesPerDaySetting = 2
 Group1.scheduleTime = 7200, 14400, 21600, 28800, 36000
 Group1.chanceForUbahn = 0.9
@@ -36,6 +37,11 @@ Group1.exitStartTime = 28800
 Group1.exitEndTime = 50400
 Group1.enterExitStddev = 4000
 Group1.timeIntervalsPerMinute = 60
+
+Group1.lunchTime = 19800, 28800
+Group1.lunchTimeLengthMean = 2000
+Group1.lunchTimeLengthStddev = 600
+Group1.ChanceForMensa = 0.7
 
 
 ## Map based movement -movement model specific settings
