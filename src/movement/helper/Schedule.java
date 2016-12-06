@@ -105,4 +105,8 @@ public class Schedule implements ScheduleInterface{
         }
         return null;
     }
+
+    public void parseScheduleFile() {
+        //TODO
+    }
 }
