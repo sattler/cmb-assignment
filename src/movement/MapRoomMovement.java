@@ -30,7 +30,7 @@ public class MapRoomMovement extends MapBasedMovement {
     public static final String CHANCE_FOR_UBAHN_SETTING = "chanceForUbahn";
     public static final String START_PEAK_ENTER_TIME_DIFFERENCE_SETTING = "startPeakEnterTimeDifference";
     public static final String ENTER_LECTURE_STDDEV_SETTING = "enterLectureStddev";
-    public static final String TIME_INTERVALS_PER_MINUTE_SETTING = "timeInteralsPerMinute";
+    public static final String TIME_INTERVALS_PER_MINUTE_SETTING = "timeIntervalsPerMinute";
 
     private final int StartPeakEnterTimeDifference;
     private final double EnterLectureStddev;
@@ -83,8 +83,6 @@ public class MapRoomMovement extends MapBasedMovement {
 
         rooms = roomHelper.getAllRooms();
         this.schedule = new Schedule(groupSettings, randomHelper, roomHelper.utilization);
-        //rooms = roomHelper.getRoomsWithType(RoomType.ENTRY_EXIT);
-        //rooms = roomHelper.getRoomsWithType(RoomType.OTHER);
 
         RandomHelper.createInstance(MovementModel.rng);
         this.randomHelper = RandomHelper.getInstance();
@@ -135,15 +133,15 @@ public class MapRoomMovement extends MapBasedMovement {
         final int curTime = (int)SimClock.getTime();
         final int timeInsecurity = 10;
         if (curTime + timeInsecurity > this.exitTime) {
-            List<Room> enterExitRooms = this.roomHelper.getRoomsWithType(RoomType.ENTRY_EXIT);
-            to = enterExitRooms.get(this.randomHelper.getRandomIntBetween(0, enterExitRooms.size())).getNode();
+            double random = this.randomHelper.getRandomDouble();
+            to = RoomHelper.getInstance().getRoomAccordingToProbability(RoomType.ENTRY_EXIT, random).getNode();
         } else {
             ScheduleSlot nextSlot = this.schedule.getNextScheduleSlot(curTime - timeInsecurity);
             if (this.enterNextLectureRoom) {
                 this.enterNextLectureRoom = false;
                 to = nextSlot.getRoom().getNode();
             } else {
-                final int fiveMinutes = 300;
+                final int fiveMinutes = this.groupSettings.getInt(TIME_INTERVALS_PER_MINUTE_SETTING) * 5;
                 if (nextSlot != null && nextSlot.getStartTime() - curTime < fiveMinutes) {
                     to = nextSlot.getRoom().getNode();
                 } else {
@@ -186,8 +184,7 @@ public class MapRoomMovement extends MapBasedMovement {
             return new Coord(0,0);
         }
         if (lastMapNode == null) {
-            List<Room> enterExitRooms = this.roomHelper.getRoomsWithType(RoomType.ENTRY_EXIT);
-            lastMapNode = enterExitRooms.get(this.randomHelper.getRandomIntBetween(0, enterExitRooms.size())).getNode();
+            lastMapNode = RoomHelper.getInstance().getRoomAccordingToProbability(RoomType.ENTRY_EXIT, randomHelper.getRandomDouble()).getNode();
         }
 
         return lastMapNode.getLocation().clone();

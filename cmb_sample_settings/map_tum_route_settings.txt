@@ -35,7 +35,7 @@ Group1.enterEndTime = 21600
 Group1.exitStartTime = 28800
 Group1.exitEndTime = 50400
 Group1.enterExitStddev = 4000
-Group1.timeInterallsPerMinute = 60
+Group1.timeIntervalsPerMinute = 60
 
 
 ## Map based movement -movement model specific settings
@@ -45,7 +45,7 @@ MapRoomMovement.routeFile = data/TUM/tum.wkt
 MapRoomMovement.routeType = 1
 MapRoomMovement.roomCapacityOther = 25
 MapRoomMovement.roomCount = 10
-# point x, point y, capacity, room_type (1 = lecture room, 2 = other, 3 = entry/exit)
+# point x, point y, capacity, room_type (1 = lecture room, 2 = other, 3 = entry/exit, 4 = probability)
 MapRoomMovement.room1 = 248.22498023681035, 134.07123072118927, 150, 1
 MapRoomMovement.room2 = 225.12582498103558, 104.04233471619116, 100, 1
 MapRoomMovement.room3 = 194.08076941626237, 112.78249675582326, 75, 1
@@ -54,8 +54,8 @@ MapRoomMovement.room5 = 116.8912097672152, 167.03893318730695, 45, 1
 MapRoomMovement.room6 = 82.47616920297982, 176.2661542081527, 40, 1
 MapRoomMovement.room7 = 187.716365711004, 163.54755226050048, 30, 1
 MapRoomMovement.room8 = 150.80748162762112, 160.5549400375235, 25, 1
-MapRoomMovement.room9 = 219.14735115437747, 145.97647870814157, 500, 3
-MapRoomMovement.room10 = 81.44802617473992, 161.10084764428478, 500, 3
+MapRoomMovement.room9 = 219.14735115437747, 145.97647870814157, 500, 3, 0.8
+MapRoomMovement.room10 = 81.44802617473992, 161.10084764428478, 500, 3, 0.2
 
 
 # Reports

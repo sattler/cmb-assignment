@@ -9,6 +9,7 @@ public class Room {
     private int capacity;
     private MapNode node;
     private RoomType type;
+    private double probability;
 
     public Room(MapNode node, int capacity, RoomType type) {
         this.node = node;
@@ -38,5 +39,13 @@ public class Room {
 
     public void setType(RoomType type) {
         this.type = type;
+    }
+
+    public double getProbability() {
+        return probability;
+    }
+
+    public void setProbability(double probability) {
+        this.probability = probability;
     }
 }
