@@ -58,8 +58,12 @@ public class EnterExitHelper {
         if (normalEnterTime < 0) {
             normalEnterTime = 0;
         }
-        if (normalEnterTime < this.EnterStartTime || normalEnterTime > this.EnterEndTime) {
+        if (normalEnterTime < this.EnterStartTime) {
             normalEnterTime = this.EnterStartTime;
+        }
+        // TODO: For Patrick
+        if (normalEnterTime > this.EnterEndTime) {
+            return null;
         }
         for (int startTime: startTimes) {
             if (random.getRandomDouble() < LectureParticipationChance) {
