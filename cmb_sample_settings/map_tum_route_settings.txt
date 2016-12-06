@@ -1,7 +1,7 @@
 # Settings for map route based movement in a triangle.
 
 Scenario.name = MapRouteMovement
-Scenario.endTime = 5400
+Scenario.endTime = 54000
 Scenario.updateInterval = 0.05
 Scenario.simulateConnections = false
 MovementModel.worldSize = 250,250
@@ -16,26 +16,26 @@ myInterface.transmitSpeed = 0
 Scenario.nrofHostGroups = 1
 
 Group1.groupID = x
-Group1.nrofHosts = 100
+Group1.nrofHosts = 5
 Group1.nrofInterfaces = 1
 Group1.interface1 = myInterface
 Group1.movementModel = MapRoomMovement
 Group1.router = PassiveRouter
 Group1.averageCoursesPerDaySetting = 2
-Group1.scheduleTime = 720, 1440, 2160, 2880, 3600
+Group1.scheduleTime = 7200, 14400, 21600, 28800, 36000
 Group1.chanceForUbahn = 0.9
 Group1.lectureParticipationChance = 0.75
-Group1.startPeakEnterTimeDifference = 60
-Group1.enterLectureStddev = 180
-Group1.exitLectureStddev = 60
-Group1.endEnterLectureDifference = 120
+Group1.startPeakEnterTimeDifference = 600
+Group1.enterLectureStddev = 1800
+Group1.exitLectureStddev = 600
+Group1.endEnterLectureDifference = 1200
 Group1.enterChanceWithoutSchedule = 0.9
-Group1.enterStartTime = 360
-Group1.enterEndTime = 2160
-Group1.exitStartTime = 2880
-Group1.exitEndTime = 5040
-Group1.enterExitStddev = 400
-Group1.timeIntervalsPerMinute = 6
+Group1.enterStartTime = 3600
+Group1.enterEndTime = 21600
+Group1.exitStartTime = 28800
+Group1.exitEndTime = 50400
+Group1.enterExitStddev = 4000
+Group1.timeInterallsPerMinute = 60
 
 
 ## Map based movement -movement model specific settings
