@@ -30,7 +30,11 @@ public class MapRoomMovement extends MapBasedMovement {
     public static final String CHANCE_FOR_UBAHN_SETTING = "chanceForUbahn";
     public static final String START_PEAK_ENTER_TIME_DIFFERENCE_SETTING = "startPeakEnterTimeDifference";
     public static final String ENTER_LECTURE_STDDEV_SETTING = "enterLectureStddev";
-    public static final String TIME_INVERVALS_PER_MINUTE = "timeIntervalsPerMinute";
+    public static final String TIME_INTERVALS_PER_MINUTE_SETTING = "timeInteralsPerMinute";
+
+    private final int StartPeakEnterTimeDifference;
+    private final double EnterLectureStddev;
+    private final int TimeIntervalsPerMinute;
 
     private String routeFileName;
     private int routeType;
@@ -51,8 +55,7 @@ public class MapRoomMovement extends MapBasedMovement {
     private int exitTime;
     private boolean byUbahn;
 
-    private final int StartPeakEnterTimeDifference;
-    private final double EnterLectureStddev;
+    private boolean enterNextLectureRoom = false;
 
 
     /**
@@ -69,6 +72,7 @@ public class MapRoomMovement extends MapBasedMovement {
 
         EnterLectureStddev = settings.getDouble(ENTER_LECTURE_STDDEV_SETTING);
         StartPeakEnterTimeDifference = settings.getInt(START_PEAK_ENTER_TIME_DIFFERENCE_SETTING);
+        TimeIntervalsPerMinute = settings.getInt(TIME_INTERVALS_PER_MINUTE_SETTING);
 
         routeFileName = modelSettings.getSetting(ROUTE_FILE_S);
         routeType = modelSettings.getInt(ROUTE_TYPE_S);
@@ -105,6 +109,7 @@ public class MapRoomMovement extends MapBasedMovement {
 
         this.EnterLectureStddev = proto.EnterLectureStddev;
         this.StartPeakEnterTimeDifference = proto.StartPeakEnterTimeDifference;
+        this.TimeIntervalsPerMinute = proto.TimeIntervalsPerMinute;
 
         this.byUbahn = this.randomHelper.getRandomDouble() < this.chanceForUbahn;
         this.initEnterExitTime();
@@ -132,15 +137,22 @@ public class MapRoomMovement extends MapBasedMovement {
             to = RoomHelper.getInstance().getRoomAccordingToProbability(RoomType.ENTRY_EXIT, random).getNode();
         } else {
             ScheduleSlot nextSlot = this.schedule.getNextScheduleSlot(curTime - timeInsecurity);
-            ScheduleSlot activeSlot = this.schedule.getActiveScheduleSlot(curTime);
-            final int fiveMinutes = this.groupSettings.getInt(TIME_INVERVALS_PER_MINUTE) * 5;
-            if (nextSlot != null && nextSlot.getStartTime() - curTime < fiveMinutes) {
+            if (this.enterNextLectureRoom) {
+                this.enterNextLectureRoom = false;
                 to = nextSlot.getRoom().getNode();
-            } else if (activeSlot != null) {
-                to = activeSlot.getRoom().getNode();
             } else {
-                List<Room> otherRomms = this.roomHelper.getRoomsWithType(RoomType.OTHER);
-                to = otherRomms.get(this.randomHelper.getRandomIntBetween(0, otherRomms.size())).getNode();
+                final int fiveMinutes = this.groupSettings.getInt(TIME_INTERVALS_PER_MINUTE_SETTING) * 5;
+                if (nextSlot != null && nextSlot.getStartTime() - curTime < fiveMinutes) {
+                    to = nextSlot.getRoom().getNode();
+                } else {
+                    ScheduleSlot activeSlot = this.schedule.getActiveScheduleSlot(curTime);
+                    if (activeSlot != null) {
+                        to = activeSlot.getRoom().getNode();
+                    } else {
+                        List<Room> otherRomms = this.roomHelper.getRoomsWithType(RoomType.OTHER);
+                        to = otherRomms.get(this.randomHelper.getRandomIntBetween(0, otherRomms.size())).getNode();
+                    }
+                }
             }
         }
 
@@ -168,7 +180,7 @@ public class MapRoomMovement extends MapBasedMovement {
      */
     @Override
     public Coord getInitialLocation() {
-        if (nextPathAvailable() > 100000) {
+        if (nextPathAvailable() == Double.MAX_VALUE) {
             return new Coord(0,0);
         }
         if (lastMapNode == null) {
@@ -194,7 +206,14 @@ public class MapRoomMovement extends MapBasedMovement {
 
     @Override
     public boolean isActive() {
-        return SimClock.getIntTime() >= this.enterTime - 600 && SimClock.getIntTime() <= this.exitTime + 600;
+        ScheduleSlot lunchSlot = this.schedule.getLunchTimeSlot();
+        int curTime = SimClock.getIntTime();
+        if (lunchSlot != null) {
+            return curTime >= this.enterTime - 5 * TimeIntervalsPerMinute && curTime <= lunchSlot.getStartTime() + 5 * TimeIntervalsPerMinute && curTime >= lunchSlot.getEndTime() - 5 * TimeIntervalsPerMinute &&
+                    curTime <= this.exitTime + 5 * TimeIntervalsPerMinute;
+        }
+        return curTime >= this.enterTime - 5 * TimeIntervalsPerMinute &&
+                curTime <= this.exitTime + 5 * TimeIntervalsPerMinute;
     }
 
     @Override
@@ -205,14 +224,37 @@ public class MapRoomMovement extends MapBasedMovement {
         } else if ( curTime > this.exitTime ) {
             return Double.MAX_VALUE;
         }
+
         ScheduleSlot activeSlot = this.schedule.getActiveScheduleSlot((int)curTime - 1);
         if (activeSlot != null) {
             return activeSlot.getEndTime();
         }
+
         ScheduleSlot nextSlot = this.schedule.getNextScheduleSlot((int)curTime + 1);
         if (nextSlot != null) {
-            return this.randomHelper.getNormalRandomWithMeanAndStddev(
+            if (nextSlot.getRoom().getNode() == this.lastMapNode) {
+                return nextSlot.getEndTime();
+            }
+
+            if (nextSlot.getStartTime() > curTime + 30 * this.TimeIntervalsPerMinute) {
+                double nextPath = this.randomHelper.getNormalRandomWithMeanAndStddev((nextSlot.getStartTime() + curTime)/2, (nextSlot.getStartTime() - curTime)/2);
+                if (nextPath < nextSlot.getStartTime() - this.StartPeakEnterTimeDifference && nextPath > curTime + this.StartPeakEnterTimeDifference) {
+                    return nextPath;
+                }
+            }
+            double enterNextLectureTime = this.randomHelper.getNormalRandomWithMeanAndStddev(
                     nextSlot.getStartTime() - this.StartPeakEnterTimeDifference, this.EnterLectureStddev);
+            if (enterNextLectureTime < curTime) {
+                enterNextLectureTime = curTime;
+            }
+            if (enterNextLectureTime < nextSlot.getStartTime() - this.StartPeakEnterTimeDifference*2) {
+                enterNextLectureTime = nextSlot.getStartTime() - this.StartPeakEnterTimeDifference*2;
+            }
+            if (enterNextLectureTime > nextSlot.getStartTime() + this.StartPeakEnterTimeDifference) {
+                enterNextLectureTime = nextSlot.getStartTime() + this.StartPeakEnterTimeDifference;
+            }
+            this.enterNextLectureRoom = true;
+            return enterNextLectureTime;
         }
         return this.exitTime;
     }
