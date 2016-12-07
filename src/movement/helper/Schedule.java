@@ -1,7 +1,9 @@
 package movement.helper;
 
 import core.Settings;
+import core.SettingsError;
 
+import java.io.*;
 import java.util.*;
 
 /**
@@ -45,7 +47,10 @@ public class Schedule implements ScheduleInterface{
             startTimes.remove(randomSlot);
             endTimes.remove(randomSlot);
         }
-
+        parseScheduleFile();
+        //ScheduleSlot newSlot = new ScheduleSlot(12000,24000,null);
+        ///setRandomRoomForSlot(newSlot,roomCapacities,random);
+        //timeSlots.add(newSlot);
         timeSlots.sort(Comparator.comparing(ScheduleSlot::getStartTime));
     }
 
@@ -107,6 +112,46 @@ public class Schedule implements ScheduleInterface{
     }
 
     public void parseScheduleFile() {
-        //TODO
+        List<String> schedules = new ArrayList<>();
+        try
+        {
+            File file = new File(FIXED_SCHEDULE_FILE_SETTING);
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            String line;
+            while ((line = reader.readLine()) != null)
+            {
+                schedules.add(line);
+            }
+            reader.close();
+        }
+        catch (IOException ioe) {
+            throw new SettingsError("Couldn't read schedule file " +
+                    FIXED_SCHEDULE_FILE_SETTING + " (cause: " + ioe.getMessage() + ")");
+        }
+
+        List<ScheduleSlot> slots = new ArrayList<>();
+
+        //String[] first = schedules.get(0).split(",");
+        //String[] second = schedules.get(1).split(",");
+
+        String[] aux = null;
+        String[] aux2 = null;
+        ScheduleSlot newSlot = null;
+
+        for(int i = 0; i < schedules.size(); i++) {
+            aux2 = schedules.get(i).split(",");
+            for (String token : aux2) {
+                aux = token.split("-");
+                newSlot = new ScheduleSlot(Integer.parseInt(aux[0]), Integer.parseInt(aux[1]), null);
+                slots.add(newSlot);
+            }
+        }
+        /*for(String token : second){
+            aux = token.split("-");
+            newSlot = new ScheduleSlot(aux[0], aux[1], null);
+            slots.add(newSlot);
+        }*/
+
+        //TODO Assign fixed rooms
     }
 }

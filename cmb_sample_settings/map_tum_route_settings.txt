@@ -16,13 +16,13 @@ myInterface.transmitSpeed = 0
 Scenario.nrofHostGroups = 1
 
 Group1.groupID = x
-Group1.nrofHosts = 5
+Group1.nrofHosts = 50
 Group1.nrofInterfaces = 1
 Group1.interface1 = myInterface
 Group1.movementModel = MapRoomMovement
 Group1.router = PassiveRouter
 Group1.averageCoursesPerDaySetting = 2
-Group1.fixedScheduleFile = data/TUM/schedule.txt
+Group1.fixedScheduleFile = data/TUM/schedule
 Group1.scheduleTime = 7200, 14400, 21600, 28800, 36000
 Group1.chanceForUbahn = 0.9
 Group1.lectureParticipationChance = 0.75
