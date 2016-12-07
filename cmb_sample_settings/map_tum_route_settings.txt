@@ -16,7 +16,7 @@ myInterface.transmitSpeed = 0
 Scenario.nrofHostGroups = 1
 
 Group1.groupID = x
-Group1.nrofHosts = 5
+Group1.nrofHosts = 250
 Group1.nrofInterfaces = 1
 Group1.interface1 = myInterface
 Group1.movementModel = MapRoomMovement
@@ -50,7 +50,7 @@ MapBasedMovement.mapFile1 = data/TUM/tum.wkt
 MapRoomMovement.routeFile = data/TUM/tum.wkt
 MapRoomMovement.routeType = 1
 MapRoomMovement.roomCapacityOther = 25
-MapRoomMovement.roomCount = 15
+MapRoomMovement.roomCount = 16
 # id, point x, point y, capacity, room_type (1 = lecture room, 2 = other, 3 = entry/exit, 4 = magistrale, 5 = mensa), probability
 MapRoomMovement.room1 = 1, 248.22498023681035, 134.07123072118927, 150, 1
 MapRoomMovement.room2 = 2, 225.12582498103558, 104.04233471619116, 100, 1
@@ -67,7 +67,7 @@ MapRoomMovement.room12 = 12, 144.90704520690292, 144.62932127678005, 10, 4
 MapRoomMovement.room13 = 13, 168.34917428688934, 139.89101859039982, 10, 4
 MapRoomMovement.room14 = 14, 161.1170280813616, 141.63670905380306, 10, 4
 MapRoomMovement.room15 = 15, 129.35994038925188, 147.8722311622861, 10, 4
-MapRoomMovement.room16 = 16, 173.22816455539575, 241.95991802411842, 250, 5
+MapRoomMovement.room16 = 16, 252.34538999315674, 185.50870852258083, 250, 5
 
 
 
