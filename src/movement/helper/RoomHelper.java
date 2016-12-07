@@ -63,11 +63,10 @@ public class RoomHelper {
     }
 
     public Room getRoomById(int id) {
-        List<Room> res = rooms.stream().filter(x -> x.getId() == id).collect(Collectors.toList());
-        if (res.size() > 0) {
-            return res.get(0);
-        }
-        return null;
+        return rooms.stream()
+                .filter(x -> x.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
     public Room getRoomAccordingToProbability(RoomType type, double random) {
