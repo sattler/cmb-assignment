@@ -83,12 +83,18 @@ public class RoomHelper {
 
     public Room getRandomEatingRoom() {
         List<Room> eatingRooms = getRoomsWithType(RoomType.MAGISTRALE);
-        return eatingRooms.get(RandomHelper.getInstance().getRandomIntBetween(0, eatingRooms.size()));
+        if (eatingRooms.size() > 0) {
+            return eatingRooms.get(RandomHelper.getInstance().getRandomIntBetween(0, eatingRooms.size()));
+        }
+        return null;
     }
 
     public Room getMensaRoom() {
         List<Room> mensaRooms = getRoomsWithType(RoomType.MENSA);
-        return mensaRooms.get(RandomHelper.getInstance().getRandomIntBetween(0, mensaRooms.size()));
+        if (mensaRooms.size() > 0) {
+            return mensaRooms.get(RandomHelper.getInstance().getRandomIntBetween(0, mensaRooms.size()));
+        }
+        return null;
     }
 
     private void readAllRooms(Settings settings, List<MapRoute> routes, SimMap map) {
@@ -99,7 +105,7 @@ public class RoomHelper {
         rooms.addAll(readOtherRooms(settings, firstId));
     }
 
-    private static Set<MapNode> getNodesForAllPointsInMap(Settings settings, List<MapRoute> routes, SimMap map) {
+    private Set<MapNode> getNodesForAllPointsInMap(Settings settings, List<MapRoute> routes, SimMap map) {
         WKTReader reader = new WKTReader();
         String fileName = settings.getSetting(ROUTE_FILE_S);
         List<Coord> points;
@@ -189,7 +195,7 @@ public class RoomHelper {
         return point;
     }
 
-    private static Coord pointToMapCoord(double x, double y, SimMap map) {
+    private Coord pointToMapCoord(double x, double y, SimMap map) {
        return pointToMapCoord(new Coord(x,y), map);
     }
 }
