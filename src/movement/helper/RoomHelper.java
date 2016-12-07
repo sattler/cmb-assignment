@@ -24,6 +24,13 @@ public class RoomHelper {
     public static final String ROUTE_FILE_S = "routeFile";
     public static final String ROOM_CAPACITY_OTHER_I = "roomCapacityOther";
 
+    public static final int ROOM_CONFIG_ID = 0;
+    public static final int ROOM_CONFIG_POINT_X = 1;
+    public static final int ROOM_CONFIG_POINT_Y = 2;
+    public static final int ROOM_CONFIG_CAPACITY = 3;
+    public static final int ROOM_CONFIG_ROOMTYPE = 4;
+    public static final int ROOM_CONFIG_PROBABILITY = 5;
+
     private Set<MapNode> roomNodes;
     private List<Room> rooms;
     private static RoomHelper instance = null;
@@ -67,24 +74,21 @@ public class RoomHelper {
     }
 
     public Room getRandomEatingRoom() {
-        // TODO: For Hannes implement a better solution this is just temprary should return a randoom room in Magistrale
-        System.out.println("TODO: Hannes implement getRandomEatingRoom!");
-        List<Room> otherRooms = getRoomsWithType(RoomType.OTHER);
-        return otherRooms.get(RandomHelper.getInstance().getRandomIntBetween(0, otherRooms.size()));
+        List<Room> eatingRooms = getRoomsWithType(RoomType.MAGISTRALE);
+        return eatingRooms.get(RandomHelper.getInstance().getRandomIntBetween(0, eatingRooms.size()));
     }
 
     public Room getMensaRoom() {
-        // TODO: For Hannes implement a better solution this is just temprary should return a special room or main entrance
-        System.out.println("TODO: Hannes implement getMensaRoom!");
-        List<Room> otherRooms = getRoomsWithType(RoomType.ENTRY_EXIT);
-        return otherRooms.get(RandomHelper.getInstance().getRandomIntBetween(0, otherRooms.size()));
+        List<Room> mensaRooms = getRoomsWithType(RoomType.MENSA);
+        return mensaRooms.get(RandomHelper.getInstance().getRandomIntBetween(0, mensaRooms.size()));
     }
 
     private void readAllRooms(Settings settings, List<MapRoute> routes, SimMap map) {
         rooms = new ArrayList<>();
         roomNodes = getNodesForAllPointsInMap(settings, routes, map);
         rooms.addAll(readConfiguredRooms(settings, map));
-        rooms.addAll(readOtherRooms(settings));
+        int firstId = rooms.get(rooms.size()-1).getId() + 1;
+        rooms.addAll(readOtherRooms(settings, firstId));
     }
 
     private static Set<MapNode> getNodesForAllPointsInMap(Settings settings, List<MapRoute> routes, SimMap map) {
@@ -125,12 +129,12 @@ public class RoomHelper {
 
         for (int i=1; i <= count; i++) {
             double[] raw = settings.getCsvDoubles(ROOM_PREFIX_S + i);
-            Coord point = pointToMapCoord(raw[0], raw[1], map);
+            Coord point = pointToMapCoord(raw[ROOM_CONFIG_POINT_X], raw[ROOM_CONFIG_POINT_Y], map);
             for (MapNode node : roomNodes) {
                 if (node.getLocation().equals(point)) {
-                    Room room = new Room(node, (int)raw[2], RoomType.valueOf((int)raw[3]));
+                    Room room = new Room((int)raw[ROOM_CONFIG_ID], node, (int)raw[ROOM_CONFIG_CAPACITY], RoomType.valueOf((int)raw[ROOM_CONFIG_ROOMTYPE]));
                     if (room.getType() == RoomType.ENTRY_EXIT) {
-                        room.setProbability(raw[4]);
+                        room.setProbability(raw[ROOM_CONFIG_PROBABILITY]);
                     }
                     rooms.add(room);
                     roomNodes.remove(node);
@@ -155,10 +159,10 @@ public class RoomHelper {
         }
     }
 
-    private List<Room> readOtherRooms(Settings settings) {
+    private List<Room> readOtherRooms(Settings settings, int firstId) {
         List<Room> otherRooms = new ArrayList<>();
         for (MapNode node : roomNodes) {
-            otherRooms.add(new Room(node, settings.getInt(ROOM_CAPACITY_OTHER_I), RoomType.OTHER));
+            otherRooms.add(new Room(firstId++, node,  settings.getInt(ROOM_CAPACITY_OTHER_I), RoomType.OTHER));
         }
         return otherRooms;
     }
