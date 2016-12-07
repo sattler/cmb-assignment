@@ -9,7 +9,9 @@ import java.util.Map;
 public enum RoomType {
     LECTURE_ROOM(1),
     OTHER(2),
-    ENTRY_EXIT(3);
+    ENTRY_EXIT(3),
+    MAGISTRALE(4),
+    MENSA(5);
 
     private int roomNr;
 
