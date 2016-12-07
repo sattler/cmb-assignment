@@ -130,22 +130,26 @@ public class MapRoomMovement extends MapBasedMovement {
         Path p = new Path(generateSpeed());
 
         MapNode to;
-        final int curTime = (int)SimClock.getTime();
+        final int curTime = SimClock.getIntTime();
         final int timeInsecurity = 10;
         if (curTime + timeInsecurity > this.exitTime) {
             double random = this.randomHelper.getRandomDouble();
             to = RoomHelper.getInstance().getRoomAccordingToProbability(RoomType.ENTRY_EXIT, random).getNode();
         } else {
             ScheduleSlot nextSlot = this.schedule.getNextScheduleSlot(curTime - timeInsecurity);
+            ScheduleSlot activeSlot = this.schedule.getActiveScheduleSlot(curTime);
             if (this.enterNextLectureRoom) {
                 this.enterNextLectureRoom = false;
-                to = nextSlot.getRoom().getNode();
+                if (activeSlot != null && activeSlot.getStartTime() - curTime < 30*TimeIntervalsPerMinute) {
+                    to = activeSlot.getRoom().getNode();
+                } else {
+                    to = nextSlot.getRoom().getNode();
+                }
             } else {
                 final int fiveMinutes = this.groupSettings.getInt(TIME_INTERVALS_PER_MINUTE_SETTING) * 5;
                 if (nextSlot != null && nextSlot.getStartTime() - curTime < fiveMinutes) {
                     to = nextSlot.getRoom().getNode();
                 } else {
-                    ScheduleSlot activeSlot = this.schedule.getActiveScheduleSlot(curTime);
                     if (activeSlot != null) {
                         to = activeSlot.getRoom().getNode();
                     } else {
@@ -239,6 +243,7 @@ public class MapRoomMovement extends MapBasedMovement {
             if (nextSlot.getStartTime() > curTime + 30 * this.TimeIntervalsPerMinute) {
                 double nextPath = this.randomHelper.getNormalRandomWithMeanAndStddev((nextSlot.getStartTime() + curTime)/2, (nextSlot.getStartTime() - curTime)/2);
                 if (nextPath < nextSlot.getStartTime() - this.StartPeakEnterTimeDifference && nextPath > curTime + this.StartPeakEnterTimeDifference) {
+                    this.enterNextLectureRoom = true;
                     return nextPath;
                 }
             }
