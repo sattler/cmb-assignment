@@ -62,6 +62,14 @@ public class RoomHelper {
         return rooms.stream().filter(x -> x.getType() == type).collect(Collectors.toList());
     }
 
+    public Room getRoomById(int id) {
+        List<Room> res = rooms.stream().filter(x -> x.getId() == id).collect(Collectors.toList());
+        if (res.size() > 0) {
+            return res.get(0);
+        }
+        return null;
+    }
+
     public Room getRoomAccordingToProbability(RoomType type, double random) {
         double cumulativeProbability = 0;
         for (Room room : getRoomsWithType(type)) {
