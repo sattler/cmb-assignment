@@ -3,6 +3,7 @@ package movement.helper;
 import core.Settings;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by netjinho on 29-11-2016.
@@ -68,9 +69,10 @@ public class Schedule implements ScheduleInterface{
             normalizedLunchTimeLength = 10*TimeIntervallsPerMinute;
         }
         List<ScheduleSlot> freeSlots = getFreeTimesBetween(LunchTimeStart, LunchTimeEnd);
-        ScheduleSlot[] fittingSlots = (ScheduleSlot[]) freeSlots.stream().filter(slot -> slot.getDuration() > lunchTimeLength).toArray();
-        if (fittingSlots.length > 0) {
-            ScheduleSlot randSlot = fittingSlots[random.getRandomIntBetween(0, fittingSlots.length)];
+        List<ScheduleSlot> fittingSlots = freeSlots.stream().filter(slot -> slot.getDuration() > lunchTimeLength)
+                .collect(Collectors.toList());
+        if (fittingSlots.size() > 0) {
+            ScheduleSlot randSlot = fittingSlots.get(random.getRandomIntBetween(0, fittingSlots.size()));
             int randStartLunchTime = random.getRandomIntBetween(randSlot.getStartTime(), randSlot.getEndTime()-normalizedLunchTimeLength);
             RoomHelper roomHelper = RoomHelper.getInstance();
             if (random.getRandomDouble() < ChanceForMensa) {
