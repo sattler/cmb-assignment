@@ -6,14 +6,21 @@ import movement.map.MapNode;
  * Created by Hannes on 30.11.2016.
  */
 public class Room {
+    private int id;
     private int capacity;
     private MapNode node;
     private RoomType type;
+    private double probability;
 
-    public Room(MapNode node, int capacity, RoomType type) {
+    public Room(int id, MapNode node, int capacity, RoomType type) {
         this.node = node;
         this.capacity = capacity;
         this.type = type;
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public int getCapacity() {
@@ -38,5 +45,13 @@ public class Room {
 
     public void setType(RoomType type) {
         this.type = type;
+    }
+
+    public double getProbability() {
+        return probability;
+    }
+
+    public void setProbability(double probability) {
+        this.probability = probability;
     }
 }

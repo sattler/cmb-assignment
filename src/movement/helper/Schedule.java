@@ -5,6 +5,7 @@ import core.SettingsError;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by netjinho on 29-11-2016.
@@ -14,6 +15,11 @@ public class Schedule implements ScheduleInterface{
     public static final String SCHEDULE_TIME_SETTING = "scheduleTime";
     public static final String AVERAGE_COURSES_PER_DAY_SETTING = "averageCoursesPerDaySetting";
     public static final String FIXED_SCHEDULE_FILE_SETTING = "fixedScheduleFile";
+    public static final String LUNCH_TIME_SETTING = "lunchTime";
+    public static final String LUNCH_TIME_LENGTH_MEAN_SETTING = "lunchTimeLengthMean";
+    public static final String LUNCH_TIME_LENGTH_STDDEV_SETTING = "lunchTimeLengthStddev";
+    public static final String TIME_INTERVALS_PER_MINUTE_SETTING = "timeIntervalsPerMinute";
+    public static final String CHANCE_FOR_MENSA_SETTING = "ChanceForMensa";
 
     private List<ScheduleSlot> timeSlots;
 
@@ -21,12 +27,20 @@ public class Schedule implements ScheduleInterface{
 
         timeSlots = new ArrayList<>();
 
-        double coursesPerDay = settings.getInt(AVERAGE_COURSES_PER_DAY_SETTING);
-        int[] times = settings.getCsvInts(SCHEDULE_TIME_SETTING);
+        final double CoursesPerDay = settings.getInt(AVERAGE_COURSES_PER_DAY_SETTING);
+        final int[] Times = settings.getCsvInts(SCHEDULE_TIME_SETTING);
+        final int[] LunchTimes = settings.getCsvInts(LUNCH_TIME_SETTING);
+        final int LunchTimeLengthMean = settings.getInt(LUNCH_TIME_LENGTH_MEAN_SETTING);
+        final int LunchTimeLengthStddev = settings.getInt(LUNCH_TIME_LENGTH_STDDEV_SETTING);
+        final int TimeIntervallsPerMinute = settings.getInt(TIME_INTERVALS_PER_MINUTE_SETTING);
+        final double ChanceForMensa = settings.getDouble(CHANCE_FOR_MENSA_SETTING);
 
-        List<Integer> startTimes = new ArrayList<>(times.length);
+        final int LunchTimeStart = LunchTimes[0];
+        final int LunchTimeEnd = LunchTimes[1];
 
-        for (int time: times) {
+        List<Integer> startTimes = new ArrayList<>(Times.length);
+
+        for (int time: Times) {
             startTimes.add(time);
         }
 
@@ -34,7 +48,7 @@ public class Schedule implements ScheduleInterface{
         startTimes.remove(startTimes.size()-1);
         endTimes.remove(0);
 
-        for (int i = 0; i < coursesPerDay; i++){
+        for (int i = 0; i < CoursesPerDay; i++){
             int randomSlot = random.getRandomIntBetween(0, startTimes.size());
             int startTime = startTimes.get(randomSlot);
             int endTime = endTimes.get(randomSlot);
@@ -49,6 +63,28 @@ public class Schedule implements ScheduleInterface{
         }
 
         timeSlots.addAll(parseScheduleFile(settings.getSetting(FIXED_SCHEDULE_FILE_SETTING),roomCapacities,random));
+
+        double lunchTimeLength = random.getNormalRandomWithMeanAndStddev(LunchTimeLengthMean, LunchTimeLengthStddev);
+        int normalizedLunchTimeLength = (int) lunchTimeLength;
+        if (normalizedLunchTimeLength > LunchTimeEnd - LunchTimeStart) {
+            normalizedLunchTimeLength = LunchTimeEnd - LunchTimeStart;
+        }
+        if (normalizedLunchTimeLength < 10*TimeIntervallsPerMinute) {
+            normalizedLunchTimeLength = 10*TimeIntervallsPerMinute;
+        }
+        List<ScheduleSlot> freeSlots = getFreeTimesBetween(LunchTimeStart, LunchTimeEnd);
+        List<ScheduleSlot> fittingSlots = freeSlots.stream().filter(slot -> slot.getDuration() > lunchTimeLength)
+                .collect(Collectors.toList());
+        if (fittingSlots.size() > 0) {
+            ScheduleSlot randSlot = fittingSlots.get(random.getRandomIntBetween(0, fittingSlots.size()));
+            int randStartLunchTime = random.getRandomIntBetween(randSlot.getStartTime(), randSlot.getEndTime()-normalizedLunchTimeLength);
+            RoomHelper roomHelper = RoomHelper.getInstance();
+            if (random.getRandomDouble() < ChanceForMensa) {
+                timeSlots.add(new ScheduleSlot(randStartLunchTime, randStartLunchTime+normalizedLunchTimeLength, roomHelper.getMensaRoom(), true));
+            } else {
+                timeSlots.add(new ScheduleSlot(randStartLunchTime, randStartLunchTime+normalizedLunchTimeLength, roomHelper.getRandomEatingRoom(), true));
+            }
+        }
 
         timeSlots.sort(Comparator.comparing(ScheduleSlot::getStartTime));
     }
@@ -88,6 +124,14 @@ public class Schedule implements ScheduleInterface{
         return timeSlots.stream().mapToInt(ScheduleSlot::getEndTime).toArray();
     }
 
+    public ScheduleSlot getLunchTimeSlot() {
+        Optional<ScheduleSlot> lunchSlot = this.timeSlots.stream().filter(ScheduleSlot::isLunchSlot).findFirst();
+        if (lunchSlot.isPresent()) {
+            return lunchSlot.get();
+        }
+        return null;
+    }
+
     public ScheduleSlot getNextScheduleSlot(int curTime) {
         int curDif = -1;
         ScheduleSlot nextSlot = null;
@@ -108,6 +152,27 @@ public class Schedule implements ScheduleInterface{
             }
         }
         return null;
+    }
+
+    public List<ScheduleSlot> getFreeTimesBetween(int start, int end) {
+        List<ScheduleSlot> ret = new ArrayList<>();
+        int testTime = start;
+        while (testTime < end) {
+            ScheduleSlot actualSlot = getActiveScheduleSlot(testTime);
+            if (actualSlot == null) {
+                ScheduleSlot nextSlot = getNextScheduleSlot(testTime);
+                if (nextSlot == null || nextSlot.getEndTime() > end) {
+                    ret.add(new ScheduleSlot(testTime, end, null));
+                    break;
+                }
+                ret.add(new ScheduleSlot(testTime, nextSlot.getStartTime(), null));
+                testTime = nextSlot.getEndTime();
+            } else {
+                testTime = actualSlot.getEndTime();
+            }
+        }
+
+        return ret;
     }
 
     public List<ScheduleSlot> parseScheduleFile(String fileName,Map<Room, Map<ScheduleSlot, Integer>> roomCapacities,RandomHelper random) {
