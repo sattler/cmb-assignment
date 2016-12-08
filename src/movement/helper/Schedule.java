@@ -48,21 +48,24 @@ public class Schedule implements ScheduleInterface{
         startTimes.remove(startTimes.size()-1);
         endTimes.remove(0);
 
-        for (int i = 0; i < CoursesPerDay; i++){
-            int randomSlot = random.getRandomIntBetween(0, startTimes.size());
-            int startTime = startTimes.get(randomSlot);
-            int endTime = endTimes.get(randomSlot);
+        if (settings.contains(FIXED_SCHEDULE_FILE_SETTING)) {
+            timeSlots.addAll(
+                    parseScheduleFile(settings.getSetting(FIXED_SCHEDULE_FILE_SETTING), roomCapacities, random));
+        } else {
+            for (int i = 0; i < CoursesPerDay; i++) {
+                int randomSlot = random.getRandomIntBetween(0, startTimes.size());
+                int startTime = startTimes.get(randomSlot);
+                int endTime = endTimes.get(randomSlot);
 
-            ScheduleSlot newSlot = new ScheduleSlot(startTime, endTime, null);
+                ScheduleSlot newSlot = new ScheduleSlot(startTime, endTime, null);
 
-            setRandomRoomForSlot(newSlot, roomCapacities, random);
+                setRandomRoomForSlot(newSlot, roomCapacities, random);
 
-            timeSlots.add(newSlot);
-            startTimes.remove(randomSlot);
-            endTimes.remove(randomSlot);
+                timeSlots.add(newSlot);
+                startTimes.remove(randomSlot);
+                endTimes.remove(randomSlot);
+            }
         }
-
-        timeSlots.addAll(parseScheduleFile(settings.getSetting(FIXED_SCHEDULE_FILE_SETTING),roomCapacities,random));
 
         double lunchTimeLength = random.getNormalRandomWithMeanAndStddev(LunchTimeLengthMean, LunchTimeLengthStddev);
         int normalizedLunchTimeLength = (int) lunchTimeLength;
