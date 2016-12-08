@@ -47,10 +47,9 @@ public class Schedule implements ScheduleInterface{
             startTimes.remove(randomSlot);
             endTimes.remove(randomSlot);
         }
-        parseScheduleFile();
-        //ScheduleSlot newSlot = new ScheduleSlot(12000,24000,null);
-        ///setRandomRoomForSlot(newSlot,roomCapacities,random);
-        //timeSlots.add(newSlot);
+
+        timeSlots.addAll(parseScheduleFile(settings.getSetting(FIXED_SCHEDULE_FILE_SETTING),roomCapacities,random));
+
         timeSlots.sort(Comparator.comparing(ScheduleSlot::getStartTime));
     }
 
@@ -111,11 +110,11 @@ public class Schedule implements ScheduleInterface{
         return null;
     }
 
-    public void parseScheduleFile() {
+    public List<ScheduleSlot> parseScheduleFile(String fileName,Map<Room, Map<ScheduleSlot, Integer>> roomCapacities,RandomHelper random) {
         List<String> schedules = new ArrayList<>();
         try
         {
-            File file = new File(FIXED_SCHEDULE_FILE_SETTING);
+            File file = new File(fileName);
             BufferedReader reader = new BufferedReader(new FileReader(file));
             String line;
             while ((line = reader.readLine()) != null)
@@ -126,31 +125,32 @@ public class Schedule implements ScheduleInterface{
         }
         catch (IOException ioe) {
             throw new SettingsError("Couldn't read schedule file " +
-                    FIXED_SCHEDULE_FILE_SETTING + " (cause: " + ioe.getMessage() + ")");
+                    fileName + " (cause: " + ioe.getMessage() + ")");
         }
 
         List<ScheduleSlot> slots = new ArrayList<>();
 
-        //String[] first = schedules.get(0).split(",");
-        //String[] second = schedules.get(1).split(",");
-
-        String[] aux = null;
-        String[] aux2 = null;
-        ScheduleSlot newSlot = null;
+        String[] timeIntervals, timeValues;
+        int startTime, endTime;
+        ScheduleSlot newSlot;
 
         for(int i = 0; i < schedules.size(); i++) {
-            aux2 = schedules.get(i).split(",");
-            for (String token : aux2) {
-                aux = token.split("-");
-                newSlot = new ScheduleSlot(Integer.parseInt(aux[0]), Integer.parseInt(aux[1]), null);
+            timeIntervals = schedules.get(i).split(",");
+
+            for (String token : timeIntervals) {
+                timeValues = token.split("-");
+
+                startTime = (Integer.parseInt(timeValues[0])-6)*3600;
+                endTime = (Integer.parseInt(timeValues[1])-6)*3600;
+
+                newSlot = new ScheduleSlot(startTime, endTime, null);
+
+                setRandomRoomForSlot(newSlot, roomCapacities, random);
+
                 slots.add(newSlot);
             }
         }
-        /*for(String token : second){
-            aux = token.split("-");
-            newSlot = new ScheduleSlot(aux[0], aux[1], null);
-            slots.add(newSlot);
-        }*/
+        return slots;
 
         //TODO Assign fixed rooms
     }
