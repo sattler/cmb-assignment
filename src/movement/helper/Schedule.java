@@ -51,8 +51,7 @@ public class Schedule implements ScheduleInterface{
         if (settings.contains(FIXED_SCHEDULE_FILE_SETTING)) {
             timeSlots.addAll(
                     parseScheduleFile(settings.getSetting(FIXED_SCHEDULE_FILE_SETTING), roomCapacities, random));
-        }
-        else {
+        } else {
 
             for (int i = 0; i < CoursesPerDay; i++) {
                 int randomSlot = random.getRandomIntBetween(0, startTimes.size());
