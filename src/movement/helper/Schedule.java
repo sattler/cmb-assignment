@@ -50,7 +50,7 @@ public class Schedule implements ScheduleInterface{
 
         if (settings.contains(FIXED_SCHEDULE_FILE_SETTING)) {
             timeSlots.addAll(
-                    parseScheduleFile(settings.getSetting(FIXED_SCHEDULE_FILE_SETTING), roomCapacities, random));
+                    parseScheduleFile(settings.getSetting(FIXED_SCHEDULE_FILE_SETTING), roomCapacities));
         } else {
 
             for (int i = 0; i < CoursesPerDay; i++) {
@@ -99,24 +99,32 @@ public class Schedule implements ScheduleInterface{
         while (retRoom == null) {
             int roomIndex = random.getRandomIntBetween(0, roomCapacities.size());
             Room room = (Room) roomCapacities.keySet().toArray()[roomIndex];
-            Map<ScheduleSlot, Integer> roomSchedule = roomCapacities.get(room);
-            if (roomSchedule == null) {
-                Map<ScheduleSlot, Integer> newRoomSchedule = new HashMap<>();
-                newRoomSchedule.put(new ScheduleSlot(slot), 1);
-                roomCapacities.put(room, newRoomSchedule);
+            if (reserveRoomInSlot(room, slot, roomCapacities)) {
                 retRoom = room;
-            } else {
-                Integer slotCap = roomSchedule.get(slot);
-                if (slotCap == null) {
-                    roomSchedule.put(new ScheduleSlot(slot), 1);
-                    retRoom = room;
-                } else if (slotCap < room.getCapacity()) {
-                    roomSchedule.put(new ScheduleSlot(slot), slotCap + 1);
-                    retRoom = room;
-                }
             }
         }
         slot.setRoom(retRoom);
+    }
+
+    private boolean reserveRoomInSlot(Room room, ScheduleSlot slot, Map<Room, Map<ScheduleSlot, Integer>> roomCapacities) {
+        Map<ScheduleSlot, Integer> roomSchedule = roomCapacities.get(room);
+        if (roomSchedule == null) {
+            Map<ScheduleSlot, Integer> newRoomSchedule = new HashMap<>();
+            newRoomSchedule.put(new ScheduleSlot(slot), 1);
+            roomCapacities.put(room, newRoomSchedule);
+            return true;
+        }
+
+        Integer slotCap = roomSchedule.get(slot);
+        if (slotCap == null) {
+            roomSchedule.put(new ScheduleSlot(slot), 1);
+            return true;
+        } else if (slotCap < room.getCapacity()) {
+            roomSchedule.put(new ScheduleSlot(slot), slotCap + 1);
+            return true;
+        }
+        return false;
+
     }
 
     public int[] getStartTimesSorted(){
@@ -178,7 +186,7 @@ public class Schedule implements ScheduleInterface{
         return ret;
     }
 
-    public List<ScheduleSlot> parseScheduleFile(String fileName,Map<Room, Map<ScheduleSlot, Integer>> roomCapacities,RandomHelper random) {
+    public List<ScheduleSlot> parseScheduleFile(String fileName,Map<Room, Map<ScheduleSlot, Integer>> roomCapacities) {
         List<String> schedules = new ArrayList<>();
         try
         {
@@ -214,10 +222,11 @@ public class Schedule implements ScheduleInterface{
             newSlot = new ScheduleSlot(startTime, endTime, null);
 
             RoomHelper roomHelper = RoomHelper.getInstance();
-            Room room = (Room) roomHelper.getRoomById(Integer.parseInt(timeValues[2]));
+            Room room = roomHelper.getRoomById(Integer.parseInt(timeValues[2]));
+            if (!this.reserveRoomInSlot(room, newSlot, roomCapacities)) {
+                throw new SettingsError("To much nodes for room with id " + room.getId());
+            }
             newSlot.setRoom(room);
-
-            //setRandomRoomForSlot(newSlot, roomCapacities, random);
 
             slots.add(newSlot);
         }
