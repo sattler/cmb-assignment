@@ -173,7 +173,7 @@ public class Schedule implements ScheduleInterface{
             ScheduleSlot actualSlot = getActiveScheduleSlot(testTime);
             if (actualSlot == null) {
                 ScheduleSlot nextSlot = getNextScheduleSlot(testTime);
-                if (nextSlot == null || nextSlot.getEndTime() > end) {
+                if (nextSlot == null || nextSlot.getStartTime() >= end) {
                     ret.add(new ScheduleSlot(testTime, end, null));
                     break;
                 }

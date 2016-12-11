@@ -140,21 +140,22 @@ public class MapRoomMovement extends MapBasedMovement {
             ScheduleSlot activeSlot = this.schedule.getActiveScheduleSlot(curTime);
             if (this.enterNextLectureRoom) {
                 this.enterNextLectureRoom = false;
-                if (activeSlot != null && activeSlot.getStartTime() - curTime < 30*TimeIntervalsPerMinute) {
+                if (activeSlot != null && activeSlot.getStartTime() - curTime < 30 * TimeIntervalsPerMinute) {
                     to = activeSlot.getRoom().getNode();
                 } else {
                     to = nextSlot.getRoom().getNode();
                 }
             } else {
-                final int fiveMinutes = this.groupSettings.getInt(TIME_INTERVALS_PER_MINUTE_SETTING) * 5;
+                final int fiveMinutes = TimeIntervalsPerMinute * 5;
                 if (nextSlot != null && nextSlot.getStartTime() - curTime < fiveMinutes) {
                     to = nextSlot.getRoom().getNode();
                 } else {
                     if (activeSlot != null) {
                         to = activeSlot.getRoom().getNode();
                     } else {
-                        List<Room> otherRomms = this.roomHelper.getRoomsWithType(RoomType.OTHER);
-                        to = otherRomms.get(this.randomHelper.getRandomIntBetween(0, otherRomms.size())).getNode();
+                        List<Room> otherRooms = this.roomHelper.getRoomsWithType(RoomType.OTHER);
+                        otherRooms.addAll(this.roomHelper.getRoomsWithType(RoomType.MAGISTRALE));
+                        to = otherRooms.get(this.randomHelper.getRandomIntBetween(0, otherRooms.size())).getNode();
                     }
                 }
             }
@@ -213,8 +214,8 @@ public class MapRoomMovement extends MapBasedMovement {
         ScheduleSlot lunchSlot = this.schedule.getLunchTimeSlot();
         int curTime = SimClock.getIntTime();
         if (lunchSlot != null) {
-            return curTime >= this.enterTime - 5 * TimeIntervalsPerMinute && curTime <= lunchSlot.getStartTime() + 5 * TimeIntervalsPerMinute && curTime >= lunchSlot.getEndTime() - 5 * TimeIntervalsPerMinute &&
-                    curTime <= this.exitTime + 5 * TimeIntervalsPerMinute;
+            return (curTime >= this.enterTime - 5 * TimeIntervalsPerMinute && curTime <= lunchSlot.getStartTime() + 5 * TimeIntervalsPerMinute) || (curTime >= lunchSlot.getEndTime() - 5 * TimeIntervalsPerMinute &&
+                    curTime <= this.exitTime + 30 * TimeIntervalsPerMinute);
         }
         return curTime >= this.enterTime - 5 * TimeIntervalsPerMinute &&
                 curTime <= this.exitTime + 5 * TimeIntervalsPerMinute;
@@ -234,10 +235,14 @@ public class MapRoomMovement extends MapBasedMovement {
             return activeSlot.getEndTime();
         }
 
-        ScheduleSlot nextSlot = this.schedule.getNextScheduleSlot((int)curTime + 1);
+        ScheduleSlot nextSlot = this.schedule.getNextScheduleSlot((int)curTime);
         if (nextSlot != null) {
             if (nextSlot.getRoom().getNode() == this.lastMapNode) {
                 return nextSlot.getEndTime();
+            }
+
+            if (nextSlot.isLunchSlot()) {
+                return nextSlot.getStartTime() < curTime ? curTime : nextSlot.getStartTime();
             }
 
             if (nextSlot.getStartTime() > curTime + 30 * this.TimeIntervalsPerMinute) {
