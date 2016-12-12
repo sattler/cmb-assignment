@@ -12,6 +12,8 @@ myInterface.type = SimpleBroadcastInterface
 myInterface.transmitRange = 0
 myInterface.transmitSpeed = 0
 
+Scenario.nrofHostGroups = 5
+
 # Groups
 Group1.groupID = f
 Group1.nrofHosts = 200
@@ -75,9 +77,9 @@ Group2.ChanceForMensa = 0.7
 
 
 
-Scenario.nrofHostGroups = 3
-Group3.groupID = x
-Group3.nrofHosts = 300
+# informatics students
+Group3.groupID = i
+Group3.nrofHosts = 100
 Group3.nrofInterfaces = 1
 Group3.interface1 = myInterface
 Group3.movementModel = MapRoomMovement
@@ -86,16 +88,16 @@ Group3.router = PassiveRouter
 Group3.averageCoursesPerDaySetting = 3
 Group3.scheduleTime = 7200, 14400, 21600, 28800, 36000, 43200, 50400
 Group3.chanceForUbahn = 0.9
-Group3.lectureParticipationChance = 0.75
-Group3.startPeakEnterTimeDifference = 600
+Group3.lectureParticipationChance = 0.65
+Group3.startPeakEnterTimeDifference = 300
 Group3.enterLectureStddev = 1800
 Group3.exitLectureStddev = 600
 Group3.endEnterLectureDifference = 1200
-Group3.enterChanceWithoutSchedule = 0.9
-Group3.enterStartTime = 3600
+Group3.enterChanceWithoutSchedule = 0.8
+Group3.enterStartTime = 4800
 Group3.enterEndTime = 21600
-Group3.exitStartTime = 28800
-Group3.exitEndTime = 50400
+Group3.exitStartTime = 26800
+Group3.exitEndTime = 53400
 Group3.enterExitStddev = 4000
 Group3.timeIntervalsPerMinute = 60
 
@@ -103,6 +105,67 @@ Group3.lunchTime = 19800, 28800
 Group3.lunchTimeLengthMean = 2000
 Group3.lunchTimeLengthStddev = 600
 Group3.ChanceForMensa = 0.7
+
+
+# math students
+Group4.groupID = m
+Group4.nrofHosts = 100
+Group4.nrofInterfaces = 1
+Group4.interface1 = myInterface
+Group4.movementModel = MapRoomMovement
+Group4.router = PassiveRouter
+
+Group4.averageCoursesPerDaySetting = 3
+Group4.scheduleTime = 7200, 14400, 21600, 28800, 36000, 43200, 50400
+Group4.chanceForUbahn = 0.9
+Group4.lectureParticipationChance = 0.75
+Group4.startPeakEnterTimeDifference = 600
+Group4.enterLectureStddev = 1800
+Group4.exitLectureStddev = 600
+Group4.endEnterLectureDifference = 1200
+Group4.enterChanceWithoutSchedule = 0.9
+Group4.enterStartTime = 3600
+Group4.enterEndTime = 21600
+Group4.exitStartTime = 28800
+Group4.exitEndTime = 50400
+Group4.enterExitStddev = 4000
+Group4.timeIntervalsPerMinute = 60
+
+Group4.lunchTime = 19800, 28800
+Group4.lunchTimeLengthMean = 2000
+Group4.lunchTimeLengthStddev = 600
+Group4.ChanceForMensa = 0.7
+
+
+
+#lazy students
+Group5.groupID = l
+Group5.nrofHosts = 100
+Group5.nrofInterfaces = 1
+Group5.interface1 = myInterface
+Group5.movementModel = MapRoomMovement
+Group5.router = PassiveRouter
+
+Group5.averageCoursesPerDaySetting = 1
+Group5.scheduleTime = 7200, 14400, 21600, 28800, 36000, 43200, 50400
+Group5.chanceForUbahn = 0.9
+Group5.lectureParticipationChance = 0.5
+Group5.startPeakEnterTimeDifference = 600
+Group5.enterLectureStddev = 1800
+Group5.exitLectureStddev = 600
+Group5.endEnterLectureDifference = 1200
+Group5.enterChanceWithoutSchedule = 0.9
+Group5.enterStartTime = 7200
+Group5.enterEndTime = 21600
+Group5.exitStartTime = 28800
+Group5.exitEndTime = 50400
+Group5.enterExitStddev = 4000
+Group5.timeIntervalsPerMinute = 60
+
+Group5.lunchTime = 19800, 28800
+Group5.lunchTimeLengthMean = 2000
+Group5.lunchTimeLengthStddev = 600
+Group5.ChanceForMensa = 0.8
 
 
 ## Map based movement -movement model specific settings
