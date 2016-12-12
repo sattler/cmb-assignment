@@ -57,6 +57,7 @@ public class MapRoomMovement extends MapBasedMovement {
 
     private boolean enterNextLectureRoom = false;
 
+    protected MapNode realLastMapNode;
 
     /**
      * Creates a new movement model based on a Settings object's settings.
@@ -164,17 +165,22 @@ public class MapRoomMovement extends MapBasedMovement {
         if (this.lastMapNode == to) {
             return null;
         }
-
+        Coord realCoord = new Coord(to.getLocation().getX() + randomHelper.getRandomDoubleBetween(-5, 5), to.getLocation().getY() + randomHelper.getRandomDoubleBetween(-5, 5));
+        MapNode realTo = new MapNode(realCoord);
         List<MapNode> nodePath = pathFinder.getShortestPath(lastMapNode, to);
 
         // this assertion should never fire if the map is checked in read phase
         assert nodePath.size() > 0 : "No path from " + lastMapNode + " to " +
                 to + ". The simulation map isn't fully connected";
 
+        nodePath.add(0, realLastMapNode);
+        nodePath.add(nodePath.size(), realTo);
+
         for (MapNode node : nodePath) { // create a Path from the shortest path
             p.addWaypoint(node.getLocation());
         }
 
+        realLastMapNode = realTo;
         lastMapNode = to;
 
         return p;
@@ -190,6 +196,7 @@ public class MapRoomMovement extends MapBasedMovement {
         }
         if (lastMapNode == null) {
             lastMapNode = RoomHelper.getInstance().getRoomAccordingToProbability(RoomType.ENTRY_EXIT, randomHelper.getRandomDouble()).getNode();
+            realLastMapNode = lastMapNode;
         }
 
         return lastMapNode.getLocation().clone();
@@ -197,8 +204,8 @@ public class MapRoomMovement extends MapBasedMovement {
 
     @Override
     public Coord getLastLocation() {
-        if (lastMapNode != null) {
-            return lastMapNode.getLocation().clone();
+        if (realLastMapNode != null) {
+            return realLastMapNode.getLocation().clone();
         } else {
             return null;
         }
