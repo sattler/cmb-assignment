@@ -111,7 +111,7 @@ MapBasedMovement.mapFile1 = data/TUM/tum.wkt
 MapRoomMovement.routeFile = data/TUM/tum.wkt
 MapRoomMovement.routeType = 1
 MapRoomMovement.roomCapacityOther = 50
-MapRoomMovement.roomCount = 20
+MapRoomMovement.roomCount = 21
 # id, point x, point y, capacity, room_type (1 = lecture room, 2 = other, 3 = entry/exit, 4 = magistrale, 5 = mensa), probability
 MapRoomMovement.room1 = 1, 248.22498023681035, 134.07123072118927, 400, 1
 MapRoomMovement.room2 = 2, 225.12582498103558, 104.04233471619116, 101, 1
