@@ -111,7 +111,7 @@ MapBasedMovement.mapFile1 = data/TUM/tum.wkt
 MapRoomMovement.routeFile = data/TUM/tum.wkt
 MapRoomMovement.routeType = 1
 MapRoomMovement.roomCapacityOther = 50
-MapRoomMovement.roomCount = 24
+MapRoomMovement.roomCount = 21
 # id, point x, point y, capacity, room_type (1 = lecture room, 2 = other, 3 = entry/exit, 4 = magistrale, 5 = mensa), probability
 MapRoomMovement.room1 = 1, 248.22498023681035, 134.07123072118927, 400, 1
 MapRoomMovement.room2 = 2, 225.12582498103558, 104.04233471619116, 101, 1
@@ -134,19 +134,24 @@ MapRoomMovement.room18 = 18, 136.58751144109135, 146.26491906123834, 20, 4
 MapRoomMovement.room19 = 19, 177.7798828101722, 147.46382442106167, 20, 4
 MapRoomMovement.room20 = 20, 170.33918494998792, 148.66815842716014, 20, 4
 MapRoomMovement.room21 = 21, 162.78165163592402, 150.23237380460546, 20, 4
-MapRoomMovement.room22 = 22, 154.9793309169401, 151.84725389063607, 20, 4
-MapRoomMovement.room23 = 23, 123.45158757578795, 157.79054141450112, 20, 4
-MapRoomMovement.room24 = 24, 117.58803369760352, 158.7730498101856, 20, 4
+# MapRoomMovement.room22 = 22, 154.9793309169401, 151.84725389063607, 20, 4
+# MapRoomMovement.room23 = 23, 123.45158757578795, 157.79054141450112, 20, 4
+# MapRoomMovement.room24 = 24, 117.58803369760352, 158.7730498101856, 20, 4
 
 
 
 # Reports
 Report.nrofReports = 2
 Report.report1 = FlightLengthReport
-Report.report2 = InterContactTimesReport
-
+Report.report2 = NodeDensityReport
+Report.outputGnuplot = true
+Report.xCount = 250
+Report.yCount = 250
+Report.onlyAverage = true
 Report.reportDir = reports
 
+Report.sampleInterval = 120
+Report.outputGnuplot = true
 
 ## GUI settings
 
