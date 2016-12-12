@@ -173,8 +173,12 @@ public class MapRoomMovement extends MapBasedMovement {
         assert nodePath.size() > 0 : "No path from " + lastMapNode + " to " +
                 to + ". The simulation map isn't fully connected";
 
-        nodePath.add(0, realLastMapNode);
-        nodePath.add(nodePath.size(), realTo);
+
+        List<Room> enterExitRooms = RoomHelper.getInstance().getRoomsWithType(RoomType.ENTRY_EXIT);
+        if (!roomListContainsCoord(enterExitRooms, to.getLocation())) {
+            nodePath.add(0, realLastMapNode);
+            nodePath.add(nodePath.size(), realTo);
+        }
 
         for (MapNode node : nodePath) { // create a Path from the shortest path
             p.addWaypoint(node.getLocation());
@@ -184,6 +188,15 @@ public class MapRoomMovement extends MapBasedMovement {
         lastMapNode = to;
 
         return p;
+    }
+
+    private boolean roomListContainsCoord(List<Room> rooms, Coord coord) {
+        for (Room room : rooms) {
+            if (room.getNode().getLocation().equals(coord)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
